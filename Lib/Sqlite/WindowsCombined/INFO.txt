@@ -1,0 +1,2 @@
+The DLL here is a mixed-mode assembly, including both the ADO.NET wrapper and SQLite itself.
+The SQLite version is, somewhat confusingly, 3.6.16.
