@@ -48,7 +48,7 @@ namespace IQToolkit.Data.Common
     }
 
     /// <summary>
-    /// Defines mapping information & rules for the query provider
+    /// Defines mapping information &amp; rules for the query provider
     /// </summary>
     public abstract class QueryMapping
     {
