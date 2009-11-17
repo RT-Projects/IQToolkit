@@ -423,7 +423,7 @@ namespace IQToolkit.Data
                    expression.NodeType != ExpressionType.Lambda;
         }
 
-        protected virtual void StartUsingConnection()
+        public virtual void StartUsingConnection()
         {
             if (this.connection.State == ConnectionState.Closed)
             {
@@ -433,7 +433,7 @@ namespace IQToolkit.Data
             this.nConnectedActions++;
         }
 
-        protected virtual void StopUsingConnection()
+        public virtual void StopUsingConnection()
         {
             System.Diagnostics.Debug.Assert(this.nConnectedActions > 0);
             this.nConnectedActions--;
