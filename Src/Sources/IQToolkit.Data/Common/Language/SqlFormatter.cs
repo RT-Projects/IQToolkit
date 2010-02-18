@@ -630,7 +630,7 @@ namespace IQToolkit.Data.Common
                     case TypeCode.Single:
                     case TypeCode.Double:
                         string str = value.ToString();
-                        if (!str.Contains('.'))
+                        if (!str.Contains('.') && !str.Contains('e') && !str.Contains('E'))
                         {
                             str += ".0";
                         }

@@ -457,18 +457,20 @@ namespace IQToolkit.Data
             this.StartUsingConnection();
             try
             {
-                DbCommand cmd = this.GetCommand(command, paramValues);
-                DbDataReader reader = this.ExecuteReader(cmd);
-                var result = Project(reader, fnProjector, entity, true);
-                if (this.ActionOpenedConnection)
+                using (DbCommand cmd = this.GetCommand(command, paramValues))
+                using (DbDataReader reader = this.ExecuteReader(cmd))
                 {
-                    result = result.ToList();
+                    var result = Project(reader, fnProjector, entity, true);
+                    if (this.ActionOpenedConnection)
+                    {
+                        result = result.ToList();
+                    }
+                    else
+                    {
+                        result = new EnumerateOnce<T>(result);
+                    }
+                    return result;
                 }
-                else
-                {
-                    result = new EnumerateOnce<T>(result);
-                }
-                return result;
             }
             finally
             {
