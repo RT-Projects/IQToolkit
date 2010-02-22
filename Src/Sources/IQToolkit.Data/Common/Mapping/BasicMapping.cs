@@ -413,7 +413,7 @@ namespace IQToolkit.Data.Common
                 pc.Projector
                 );
 
-            return (ProjectionExpression)this.Translator.Police.ApplyPolicy(proj, entity.ElementType);
+            return (ProjectionExpression) this.Translator.Police.ApplyPolicy(proj, entity.ElementType);
         }
 
         public override EntityExpression GetEntityExpression(Expression root, MappingEntity entity)
@@ -707,7 +707,7 @@ namespace IQToolkit.Data.Common
         public override Expression GetInsertQueryExpression(MappingEntity entity, Expression query)
         {
             var tableAlias = new TableAlias();
-            var table = new TableExpression(tableAlias, entity, this.GetTableName(entity));
+            var table = new TableExpression(tableAlias, entity, this.mapping.GetTableName(entity));
             return new InsertQueryCommand(table, query);
         }
 
@@ -728,7 +728,7 @@ namespace IQToolkit.Data.Common
         private IEnumerable<ColumnAssignment> GetColumnAssignments(Expression table, MappingEntity entity, IList<Expression> assignments)
         {
             var list = new List<ColumnAssignment>();
-            var mapped = this.GetMappedMembers(entity).Where(m => this.IsColumn(entity, m)).ToArray();
+            var mapped = this.mapping.GetMappedMembers(entity).Where(m => this.mapping.IsColumn(entity, m)).ToArray();
             foreach (var a in assignments)
             {
                 var body = a;
@@ -914,7 +914,7 @@ namespace IQToolkit.Data.Common
         public override Expression GetUpdateQueryExpression(MappingEntity entity, LambdaExpression updateCheck, LambdaExpression assignments)
         {
             var tableAlias = new TableAlias();
-            var table = new TableExpression(tableAlias, entity, this.GetTableName(entity));
+            var table = new TableExpression(tableAlias, entity, this.mapping.GetTableName(entity));
 
             Expression typeProjector = this.GetEntityExpression(table, entity);
             Expression where;

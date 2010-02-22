@@ -254,10 +254,10 @@ namespace IQToolkit.Data.Common
             if (this.language.IsAggregate(m.Method))
             {
                 return this.BindAggregate(
-                    m.Arguments[0], 
-                    m.Method.Name, 
-                    m.Method.ReturnType, 
-                    m.Arguments.Count > 1 ? GetLambda(m.Arguments[1]) : null, 
+                    m.Arguments[0],
+                    m.Method.Name,
+                    m.Method.ReturnType,
+                    m.Arguments.Count > 1 ? GetLambda(m.Arguments[1]) : null,
                     m == this.root
                     );
             }
@@ -294,7 +294,7 @@ namespace IQToolkit.Data.Common
                     }
                     goto default;
                 case ExpressionType.MemberAccess:
-                    var bound = this.BindRelationshipProperty((MemberExpression)expr);
+                    var bound = this.BindRelationshipProperty((MemberExpression) expr);
                     if (bound.NodeType != ExpressionType.MemberAccess)
                         return this.ConvertToSequence(bound);
                     goto default;
@@ -355,7 +355,7 @@ namespace IQToolkit.Data.Common
 
             if (project.Projector is ConstantExpression)
             {
-                return this.Visit(this.mapping.GetInsertExpression(insert.Table.Entity, project.Projector, null));
+                return this.Visit(this.mapper.GetInsertExpression(insert.Table.Entity, project.Projector, null));
             }
             else if (project.Projector is MemberInitExpression)
             {
@@ -365,7 +365,8 @@ namespace IQToolkit.Data.Common
 
                 foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
                 {
-                    columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression));
+                    var type = (binding.Member is FieldInfo) ? ((FieldInfo) binding.Member).FieldType : ((PropertyInfo) binding.Member).PropertyType;
+                    columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression, this.language.TypeSystem.GetColumnType(type)));
                     columnNames.Add(binding.Member.Name);
                 }
             }
@@ -928,7 +929,7 @@ namespace IQToolkit.Data.Common
                             new[] { new ColumnDeclaration("value", new AggregateExpression(typeof(int), "Count", null, false), colType) }
                             );
                         var colx = new ColumnExpression(typeof(int), colType, newSelect.Alias, "value");
-                        var exp = isAll 
+                        var exp = isAll
                             ? colx.Equal(Expression.Constant(0))
                             : colx.GreaterThan(Expression.Constant(0));
                         return new ProjectionExpression(
@@ -995,6 +996,11 @@ namespace IQToolkit.Data.Common
             return this.Visit(this.mapper.GetInsertExpression(entity, instance, selector));
         }
 
+        private Expression BindInsertQuery(IEntityTable upd, Expression query)
+        {
+            MappingEntity entity = this.mapper.Mapping.GetEntity(upd.ElementType, upd.TableId);
+            return this.Visit(this.mapper.GetInsertQueryExpression(entity, query));
+        }
         private Expression BindUpdate(IEntityTable upd, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
         {
             MappingEntity entity = this.mapper.Mapping.GetEntity(instance.Type, upd.TableId);
@@ -1118,9 +1124,9 @@ namespace IQToolkit.Data.Common
             switch (expression.NodeType)
             {
                 case ExpressionType.MemberAccess:
-                    return IsRemoteQuery(((MemberExpression)expression).Expression);
+                    return IsRemoteQuery(((MemberExpression) expression).Expression);
                 case ExpressionType.Call:
-                    MethodCallExpression mc = (MethodCallExpression)expression;
+                    MethodCallExpression mc = (MethodCallExpression) expression;
                     if (mc.Object != null)
                         return IsRemoteQuery(mc.Object);
                     else if (mc.Arguments.Count > 0)
