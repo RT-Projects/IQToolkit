@@ -23,53 +23,54 @@ namespace IQToolkit.Data.Common
             {
                 return null;
             }
-            switch ((DbExpressionType)exp.NodeType)
+            switch ((DbExpressionType) exp.NodeType)
             {
                 case DbExpressionType.Table:
-                    return this.VisitTable((TableExpression)exp);
+                    return this.VisitTable((TableExpression) exp);
                 case DbExpressionType.Column:
-                    return this.VisitColumn((ColumnExpression)exp);
+                    return this.VisitColumn((ColumnExpression) exp);
                 case DbExpressionType.Select:
-                    return this.VisitSelect((SelectExpression)exp);
+                    return this.VisitSelect((SelectExpression) exp);
                 case DbExpressionType.Join:
-                    return this.VisitJoin((JoinExpression)exp);
+                    return this.VisitJoin((JoinExpression) exp);
                 case DbExpressionType.OuterJoined:
-                    return this.VisitOuterJoined((OuterJoinedExpression)exp);
+                    return this.VisitOuterJoined((OuterJoinedExpression) exp);
                 case DbExpressionType.Aggregate:
-                    return this.VisitAggregate((AggregateExpression)exp);
+                    return this.VisitAggregate((AggregateExpression) exp);
                 case DbExpressionType.Scalar:
                 case DbExpressionType.Exists:
                 case DbExpressionType.In:
-                    return this.VisitSubquery((SubqueryExpression)exp);
+                    return this.VisitSubquery((SubqueryExpression) exp);
                 case DbExpressionType.AggregateSubquery:
-                    return this.VisitAggregateSubquery((AggregateSubqueryExpression)exp);
+                    return this.VisitAggregateSubquery((AggregateSubqueryExpression) exp);
                 case DbExpressionType.IsNull:
-                    return this.VisitIsNull((IsNullExpression)exp);
+                    return this.VisitIsNull((IsNullExpression) exp);
                 case DbExpressionType.Between:
-                    return this.VisitBetween((BetweenExpression)exp);
+                    return this.VisitBetween((BetweenExpression) exp);
                 case DbExpressionType.RowCount:
-                    return this.VisitRowNumber((RowNumberExpression)exp);
+                    return this.VisitRowNumber((RowNumberExpression) exp);
                 case DbExpressionType.Projection:
-                    return this.VisitProjection((ProjectionExpression)exp);
+                    return this.VisitProjection((ProjectionExpression) exp);
                 case DbExpressionType.NamedValue:
-                    return this.VisitNamedValue((NamedValueExpression)exp);
+                    return this.VisitNamedValue((NamedValueExpression) exp);
                 case DbExpressionType.ClientJoin:
-                    return this.VisitClientJoin((ClientJoinExpression)exp);
+                    return this.VisitClientJoin((ClientJoinExpression) exp);
                 case DbExpressionType.Insert:
+                case DbExpressionType.InsertQuery:
                 case DbExpressionType.Update:
                 case DbExpressionType.Delete:
                 case DbExpressionType.If:
                 case DbExpressionType.Block:
                 case DbExpressionType.Declaration:
-                    return this.VisitCommand((CommandExpression)exp);
+                    return this.VisitCommand((CommandExpression) exp);
                 case DbExpressionType.Batch:
-                    return this.VisitBatch((BatchExpression)exp);
+                    return this.VisitBatch((BatchExpression) exp);
                 case DbExpressionType.Variable:
-                    return this.VisitVariable((VariableExpression)exp);
+                    return this.VisitVariable((VariableExpression) exp);
                 case DbExpressionType.Function:
-                    return this.VisitFunction((FunctionExpression)exp);
+                    return this.VisitFunction((FunctionExpression) exp);
                 case DbExpressionType.Entity:
-                    return this.VisitEntity((EntityExpression)exp);
+                    return this.VisitEntity((EntityExpression) exp);
                 default:
                     return base.Visit(exp);
             }
@@ -113,8 +114,8 @@ namespace IQToolkit.Data.Common
         }
 
         protected SelectExpression UpdateSelect(
-            SelectExpression select,             
-            Expression from, Expression where, 
+            SelectExpression select,
+            Expression from, Expression where,
             IEnumerable<OrderExpression> orderBy, IEnumerable<Expression> groupBy,
             Expression skip, Expression take,
             bool isDistinct, bool isReverse,
@@ -239,21 +240,21 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitSubquery(SubqueryExpression subquery)
         {
-            switch ((DbExpressionType)subquery.NodeType)
+            switch ((DbExpressionType) subquery.NodeType)
             {
                 case DbExpressionType.Scalar:
-                    return this.VisitScalar((ScalarExpression)subquery);
+                    return this.VisitScalar((ScalarExpression) subquery);
                 case DbExpressionType.Exists:
-                    return this.VisitExists((ExistsExpression)subquery);
+                    return this.VisitExists((ExistsExpression) subquery);
                 case DbExpressionType.In:
-                    return this.VisitIn((InExpression)subquery);
+                    return this.VisitIn((InExpression) subquery);
             }
             return subquery;
         }
 
         protected virtual Expression VisitScalar(ScalarExpression scalar)
         {
-            var select = (SelectExpression)this.Visit(scalar.Select);
+            var select = (SelectExpression) this.Visit(scalar.Select);
             return this.UpdateScalar(scalar, select);
         }
 
@@ -268,7 +269,7 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitExists(ExistsExpression exists)
         {
-            var select = (SelectExpression)this.Visit(exists.Select);
+            var select = (SelectExpression) this.Visit(exists.Select);
             return this.UpdateExists(exists, select);
         }
 
@@ -284,7 +285,7 @@ namespace IQToolkit.Data.Common
         protected virtual Expression VisitIn(InExpression @in)
         {
             var expr = this.Visit(@in.Expression);
-            var select = (SelectExpression)this.Visit(@in.Select);
+            var select = (SelectExpression) this.Visit(@in.Select);
             var values = this.VisitExpressionList(@in.Values);
             return this.UpdateIn(@in, expr, select, values);
         }
@@ -327,7 +328,7 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitProjection(ProjectionExpression proj)
         {
-            var select = (SelectExpression)this.Visit(proj.Select);
+            var select = (SelectExpression) this.Visit(proj.Select);
             var projector = this.Visit(proj.Projector);
             return this.UpdateProjection(proj, select, projector, proj.Aggregator);
         }
@@ -343,11 +344,11 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitClientJoin(ClientJoinExpression join)
         {
-            var projection = (ProjectionExpression)this.Visit(join.Projection);
+            var projection = (ProjectionExpression) this.Visit(join.Projection);
             var outerKey = this.VisitExpressionList(join.OuterKey);
             var innerKey = this.VisitExpressionList(join.InnerKey);
             return this.UpdateClientJoin(join, projection, outerKey, innerKey);
-         }
+        }
 
         protected ClientJoinExpression UpdateClientJoin(ClientJoinExpression join, ProjectionExpression projection, IEnumerable<Expression> outerKey, IEnumerable<Expression> innerKey)
         {
@@ -360,20 +361,22 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitCommand(CommandExpression command)
         {
-            switch ((DbExpressionType)command.NodeType)
+            switch ((DbExpressionType) command.NodeType)
             {
                 case DbExpressionType.Insert:
-                    return this.VisitInsert((InsertCommand)command);
+                    return this.VisitInsert((InsertCommand) command);
+                case DbExpressionType.InsertQuery:
+                    return this.VisitInsertQuery((InsertQueryCommand) command);
                 case DbExpressionType.Update:
-                    return this.VisitUpdate((UpdateCommand)command);
+                    return this.VisitUpdate((UpdateCommand) command);
                 case DbExpressionType.Delete:
-                    return this.VisitDelete((DeleteCommand)command);
+                    return this.VisitDelete((DeleteCommand) command);
                 case DbExpressionType.If:
-                    return this.VisitIf((IFCommand)command);
+                    return this.VisitIf((IFCommand) command);
                 case DbExpressionType.Block:
-                    return this.VisitBlock((BlockCommand)command);
+                    return this.VisitBlock((BlockCommand) command);
                 case DbExpressionType.Declaration:
-                    return this.VisitDeclaration((DeclarationCommand)command);
+                    return this.VisitDeclaration((DeclarationCommand) command);
                 default:
                     return this.VisitUnknown(command);
             }
@@ -381,9 +384,16 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitInsert(InsertCommand insert)
         {
-            var table = (TableExpression)this.Visit(insert.Table);
+            var table = (TableExpression) this.Visit(insert.Table);
             var assignments = this.VisitColumnAssignments(insert.Assignments);
             return this.UpdateInsert(insert, table, assignments);
+        }
+
+        protected virtual Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            var table = (TableExpression) this.Visit(insert.Table);
+            var query = this.Visit(insert.Query);
+            return this.UpdateInsertQuery(insert, table, query, insert.ColumnNames);
         }
 
         protected InsertCommand UpdateInsert(InsertCommand insert, TableExpression table, IEnumerable<ColumnAssignment> assignments)
@@ -395,9 +405,18 @@ namespace IQToolkit.Data.Common
             return insert;
         }
 
+        protected InsertQueryCommand UpdateInsertQuery(InsertQueryCommand insert, TableExpression table, Expression query, IEnumerable<string> columnNames)
+        {
+            if (table != insert.Table || query != insert.Query || columnNames != insert.ColumnNames)
+            {
+                return new InsertQueryCommand(table, query, columnNames);
+            }
+            return insert;
+        }
+
         protected virtual Expression VisitUpdate(UpdateCommand update)
         {
-            var table = (TableExpression)this.Visit(update.Table);
+            var table = (TableExpression) this.Visit(update.Table);
             var where = this.Visit(update.Where);
             var assignments = this.VisitColumnAssignments(update.Assignments);
             return this.UpdateUpdate(update, table, where, assignments);
@@ -414,7 +433,7 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitDelete(DeleteCommand delete)
         {
-            var table = (TableExpression)this.Visit(delete.Table);
+            var table = (TableExpression) this.Visit(delete.Table);
             var where = this.Visit(delete.Where);
             return this.UpdateDelete(delete, table, where);
         }
@@ -430,7 +449,7 @@ namespace IQToolkit.Data.Common
 
         protected virtual Expression VisitBatch(BatchExpression batch)
         {
-            var operation = (LambdaExpression)this.Visit(batch.Operation);
+            var operation = (LambdaExpression) this.Visit(batch.Operation);
             var batchSize = this.Visit(batch.BatchSize);
             var stream = this.Visit(batch.Stream);
             return this.UpdateBatch(batch, batch.Input, operation, batchSize, stream);
@@ -480,7 +499,7 @@ namespace IQToolkit.Data.Common
         protected virtual Expression VisitDeclaration(DeclarationCommand decl)
         {
             var variables = this.VisitVariableDeclarations(decl.Variables);
-            var source = (SelectExpression)this.Visit(decl.Source);
+            var source = (SelectExpression) this.Visit(decl.Source);
             return this.UpdateDeclaration(decl, variables, source);
 
         }
@@ -516,7 +535,7 @@ namespace IQToolkit.Data.Common
 
         protected virtual ColumnAssignment VisitColumnAssignment(ColumnAssignment ca)
         {
-            ColumnExpression c = (ColumnExpression)this.Visit(ca.Column);
+            ColumnExpression c = (ColumnExpression) this.Visit(ca.Column);
             Expression e = this.Visit(ca.Expression);
             return this.UpdateColumnAssignment(ca, c, e);
         }

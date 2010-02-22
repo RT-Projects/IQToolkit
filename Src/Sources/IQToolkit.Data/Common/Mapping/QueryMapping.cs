@@ -171,6 +171,11 @@ namespace IQToolkit.Data.Common
         public abstract Expression GetInsertExpression(MappingEntity entity, Expression instance, LambdaExpression selector);
 
         /// <summary>
+        /// Get an expression that represents the insert operation with a query.
+        /// </summary>
+        public abstract Expression GetInsertQueryExpression(MappingEntity entity, Expression query);
+
+        /// <summary>
         /// Get an expression that represents the update operation for the specified instance.
         /// </summary>
         /// <param name="entity"></param>
@@ -180,6 +185,11 @@ namespace IQToolkit.Data.Common
         /// <param name="else"></param>
         /// <returns></returns>
         public abstract Expression GetUpdateExpression(MappingEntity entity, Expression instance, LambdaExpression updateCheck, LambdaExpression selector, Expression @else);
+
+        /// <summary>
+        /// Get an expression that represents an update query against the specified entities.
+        /// </summary>
+        public abstract Expression GetUpdateQueryExpression(MappingEntity entity, LambdaExpression updateCheck, LambdaExpression assignments);
 
         /// <summary>
         /// Get an expression that represents the insert-or-update operation for the specified instance.

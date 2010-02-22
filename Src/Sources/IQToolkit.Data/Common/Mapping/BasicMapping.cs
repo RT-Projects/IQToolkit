@@ -73,7 +73,7 @@ namespace IQToolkit.Data.Common
         }
 
         /// <summary>
-        /// Deterimines is a property is mapped onto a column or relationship
+        /// Determines if a property is mapped onto a column or relationship
         /// </summary>
         /// <param name="member"></param>
         /// <returns></returns>
@@ -162,7 +162,7 @@ namespace IQToolkit.Data.Common
         /// <param name="member"></param>
         /// <returns></returns>
         protected virtual IEnumerable<MemberInfo> GetAssociationKeyMembers(MappingEntity entity, MemberInfo member)
-        {            
+        {
             return new MemberInfo[] { };
         }
 
@@ -308,7 +308,7 @@ namespace IQToolkit.Data.Common
                 {
                     assignments = this.MapAssignments(assignments, entity.EntityType).ToList();
                 }
-                result = Expression.MemberInit(newExpression, (MemberBinding[])assignments.Select(a => Expression.Bind(a.Member, a.Expression)).ToArray());
+                result = Expression.MemberInit(newExpression, (MemberBinding[]) assignments.Select(a => Expression.Bind(a.Member, a.Expression)).ToArray());
             }
             else
             {
@@ -327,7 +327,7 @@ namespace IQToolkit.Data.Common
         {
             foreach (var assign in assignments)
             {
-                MemberInfo[] members = entityType.GetMember(assign.Member.Name, BindingFlags.Instance|BindingFlags.Public);
+                MemberInfo[] members = entityType.GetMember(assign.Member.Name, BindingFlags.Instance | BindingFlags.Public);
                 if (members != null && members.Length > 0)
                 {
                     yield return new EntityAssignment(members[0], assign.Expression);
@@ -454,7 +454,7 @@ namespace IQToolkit.Data.Common
                 Expression where = null;
                 for (int i = 0, n = associatedMembers.Count; i < n; i++)
                 {
-                    Expression equal = 
+                    Expression equal =
                         this.GetMemberExpression(projection.Projector, relatedEntity, associatedMembers[i]).Equal(
                             this.GetMemberExpression(root, entity, declaredTypeMembers[i])
                         );
@@ -498,6 +498,13 @@ namespace IQToolkit.Data.Common
             return new InsertCommand(table, assignments);
         }
 
+        public override Expression GetInsertQueryExpression(MappingEntity entity, Expression query)
+        {
+            var tableAlias = new TableAlias();
+            var table = new TableExpression(tableAlias, entity, this.GetTableName(entity));
+            return new InsertQueryCommand(table, query);
+        }
+
         private IEnumerable<ColumnAssignment> GetColumnAssignments(Expression table, Expression instance, MappingEntity entity, Func<MappingEntity, MemberInfo, bool> fnIncludeColumn)
         {
             foreach (var m in this.GetMappedMembers(entity))
@@ -505,11 +512,37 @@ namespace IQToolkit.Data.Common
                 if (this.IsColumn(entity, m) && fnIncludeColumn(entity, m))
                 {
                     yield return new ColumnAssignment(
-                        (ColumnExpression)this.GetMemberExpression(table, entity, m),
+                        (ColumnExpression) this.GetMemberExpression(table, entity, m),
                         Expression.MakeMemberAccess(instance, m)
                         );
                 }
             }
+        }
+
+        private IEnumerable<ColumnAssignment> GetColumnAssignments(Expression table, MappingEntity entity, IList<Expression> assignments)
+        {
+            var list = new List<ColumnAssignment>();
+            var mapped = this.GetMappedMembers(entity).Where(m => this.IsColumn(entity, m)).ToArray();
+            foreach (var a in assignments)
+            {
+                var body = a;
+                while (body.NodeType == ExpressionType.Quote)
+                    body = ((UnaryExpression) body).Operand;
+                if (body.NodeType != ExpressionType.Equal)
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+                var left = ((BinaryExpression) body).Left;
+                if (!(left is MemberExpression))
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+                var member = mapped.FirstOrDefault(mem => mem.Equals(((MemberExpression) left).Member));
+                if (member == null)
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+
+                list.Add(new ColumnAssignment(
+                    (ColumnExpression) this.GetMemberExpression(table, entity, member),
+                    ((BinaryExpression) body).Right
+                ));
+            }
+            return list;
         }
 
         protected virtual Expression GetInsertResult(MappingEntity entity, Expression instance, LambdaExpression selector, Dictionary<MemberInfo, Expression> map)
@@ -671,6 +704,28 @@ namespace IQToolkit.Data.Common
             }
         }
 
+        public override Expression GetUpdateQueryExpression(MappingEntity entity, LambdaExpression updateCheck, LambdaExpression assignments)
+        {
+            var tableAlias = new TableAlias();
+            var table = new TableExpression(tableAlias, entity, this.GetTableName(entity));
+
+            Expression typeProjector = this.GetEntityExpression(table, entity);
+            Expression where;
+            if (updateCheck != null)
+                where = DbExpressionReplacer.Replace(updateCheck.Body, updateCheck.Parameters[0], typeProjector);
+            else
+                where = Expression.Constant(true);
+
+            var body = assignments.Body;
+            while (body.NodeType == ExpressionType.Quote)
+                body = ((UnaryExpression) body).Operand;
+            body = DbExpressionReplacer.Replace(body, assignments.Parameters[0], typeProjector);
+            if (!(body is NewArrayExpression))
+                throw new ArgumentException("Body of 'assignments' lambda is expected to be a new-array expression.", "assignments");
+            var assignmentsQ = this.GetColumnAssignments(table, entity, ((NewArrayExpression) body).Expressions);
+            return new UpdateCommand(table, where, assignmentsQ);
+        }
+
         protected virtual Expression GetUpdateResult(MappingEntity entity, Expression instance, LambdaExpression selector)
         {
             var tq = this.GetQueryExpression(entity);
@@ -694,7 +749,7 @@ namespace IQToolkit.Data.Common
                 var check = this.GetEntityExistsTest(entity, instance);
                 return new IFCommand(check, update, insert);
             }
-            else 
+            else
             {
                 Expression insert = this.GetInsertExpression(entity, instance, resultSelector);
                 Expression update = this.GetUpdateExpression(entity, instance, updateCheck, resultSelector, insert);

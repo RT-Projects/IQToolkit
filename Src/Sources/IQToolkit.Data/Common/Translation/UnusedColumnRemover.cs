@@ -25,7 +25,7 @@ namespace IQToolkit.Data.Common
             this.allColumnsUsed = new Dictionary<TableAlias, HashSet<string>>();
         }
 
-        public static Expression Remove(Expression expression) 
+        public static Expression Remove(Expression expression)
         {
             return new UnusedColumnRemover().Visit(expression);
         }
@@ -65,16 +65,31 @@ namespace IQToolkit.Data.Common
             return column;
         }
 
-        protected override Expression VisitSubquery(SubqueryExpression subquery) 
+        protected override Expression VisitSubquery(SubqueryExpression subquery)
         {
-            if ((subquery.NodeType == (ExpressionType)DbExpressionType.Scalar ||
-                subquery.NodeType == (ExpressionType)DbExpressionType.In) &&
-                subquery.Select != null) 
+            if ((subquery.NodeType == (ExpressionType) DbExpressionType.Scalar ||
+                subquery.NodeType == (ExpressionType) DbExpressionType.In) &&
+                subquery.Select != null)
             {
                 System.Diagnostics.Debug.Assert(subquery.Select.Columns.Count == 1);
                 MarkColumnAsUsed(subquery.Select.Alias, subquery.Select.Columns[0].Name);
             }
- 	        return base.VisitSubquery(subquery);
+            return base.VisitSubquery(subquery);
+        }
+
+        protected override Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            var table = (TableExpression) this.Visit(insert.Table);
+            Expression query;
+            if (insert.Query is SelectExpression)
+            {
+                var sel = (SelectExpression) insert.Query;
+                var where = this.Visit(sel.Where);
+                query = UpdateSelect(sel, sel.From, where, sel.OrderBy, sel.GroupBy, sel.Skip, sel.Take, sel.IsDistinct, sel.IsReverse, sel.Columns);
+            }
+            else
+                query = this.Visit(insert.Query);
+            return this.UpdateInsertQuery(insert, table, query, insert.ColumnNames);
         }
 
         protected override Expression VisitSelect(SelectExpression select)
@@ -129,12 +144,12 @@ namespace IQToolkit.Data.Common
 
             ClearColumnsUsed(select.Alias);
 
-            if (columns != select.Columns 
-                || take != select.Take 
+            if (columns != select.Columns
+                || take != select.Take
                 || skip != select.Skip
-                || orderbys != select.OrderBy 
+                || orderbys != select.OrderBy
                 || groupbys != select.GroupBy
-                || where != select.Where 
+                || where != select.Where
                 || from != select.From)
             {
                 select = new SelectExpression(select.Alias, columns, from, where, orderbys, groupbys, select.IsDistinct, skip, take, select.IsReverse);
@@ -159,7 +174,7 @@ namespace IQToolkit.Data.Common
         {
             // visit mapping in reverse order
             Expression projector = this.Visit(projection.Projector);
-            SelectExpression select = (SelectExpression)this.Visit(projection.Select);
+            SelectExpression select = (SelectExpression) this.Visit(projection.Select);
             return this.UpdateProjection(projection, select, projector, projection.Aggregator);
         }
 
@@ -167,7 +182,7 @@ namespace IQToolkit.Data.Common
         {
             var innerKey = this.VisitExpressionList(join.InnerKey);
             var outerKey = this.VisitExpressionList(join.OuterKey);
-            ProjectionExpression projection = (ProjectionExpression)this.Visit(join.Projection);
+            ProjectionExpression projection = (ProjectionExpression) this.Visit(join.Projection);
             if (projection != join.Projection || innerKey != join.InnerKey || outerKey != join.OuterKey)
             {
                 return new ClientJoinExpression(projection, outerKey, innerKey);
