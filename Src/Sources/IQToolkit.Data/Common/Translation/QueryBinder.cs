@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Diagnostics;
 
 namespace IQToolkit.Data.Common
 {
@@ -339,16 +340,29 @@ namespace IQToolkit.Data.Common
             var project = insert.Query as ProjectionExpression;
             if (project == null)
                 throw new ArgumentException("insert.Query was expected to be a ProjectionExpression");
-            var memberInit = project.Projector as MemberInitExpression;
-            if (memberInit == null || !memberInit.Type.Equals(insert.Table.Entity.ElementType))
-                throw new ArgumentException("The result of the Insert query must be a member initialization expression for the type " + insert.Table.Entity.ElementType.FullName);
 
             var columnDeclarations = new List<ColumnDeclaration>();
             var columnNames = new List<string>();
-            foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
+
+            if (project.Projector is ConstantExpression)
             {
-                columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression));
-                columnNames.Add(binding.Member.Name);
+                return this.Visit(this.mapping.GetInsertExpression(insert.Table.Entity, project.Projector, null));
+            }
+            else if (project.Projector is MemberInitExpression)
+            {
+                var memberInit = (MemberInitExpression) project.Projector;
+                if (!memberInit.Type.Equals(insert.Table.Entity.ElementType))
+                    throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
+
+                foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
+                {
+                    columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression));
+                    columnNames.Add(binding.Member.Name);
+                }
+            }
+            else
+            {
+                throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
             }
 
             var alias = new TableAlias();
