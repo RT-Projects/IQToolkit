@@ -584,7 +584,7 @@ namespace IQToolkit.Data.Common
                 }
                 if (alternate != null)
                 {
-                    alternate.Add(new ColumnDeclaration(column.Name, e));
+                    alternate.Add(new ColumnDeclaration(column.Name, e, column.QueryType));
                 }
             }
             if (alternate != null)

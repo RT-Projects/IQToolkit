@@ -24,17 +24,31 @@ namespace IQToolkit.Data.Common
         bool hideColumnAliases;
         bool hideTableAliases;
         bool isNested;
+        bool forDebug;
 
-        protected SqlFormatter(QueryLanguage language)
+        private SqlFormatter(QueryLanguage language, bool forDebug)
         {
             this.language = language;
             this.sb = new StringBuilder();
             this.aliases = new Dictionary<TableAlias, string>();
+            this.forDebug = forDebug;
+        }
+
+        protected SqlFormatter(QueryLanguage language)
+            : this(language, false)
+        {
+        }
+
+        public static string Format(Expression expression, bool forDebug)
+        {
+            var formatter = new SqlFormatter(null, forDebug);
+            formatter.Visit(expression);
+            return formatter.ToString();
         }
 
         public static string Format(Expression expression)
         {
-            var formatter = new SqlFormatter(null);
+            var formatter = new SqlFormatter(null, false);
             formatter.Visit(expression);
             return formatter.ToString();
         }
@@ -67,6 +81,11 @@ namespace IQToolkit.Data.Common
             set { this.isNested = value; }
         }
 
+        protected bool ForDebug
+        {
+            get { return this.forDebug; }
+        }
+
         protected enum Indentation
         {
             Same,
@@ -95,9 +114,21 @@ namespace IQToolkit.Data.Common
             this.WriteParameterName(name);
         }
 
+        protected virtual void WriteAsAliasName(string aliasName)
+        {
+            this.Write("AS ");
+            this.WriteAliasName(aliasName);
+        }
+
         protected virtual void WriteAliasName(string aliasName)
         {
             this.Write(aliasName);
+        }
+
+        protected virtual void WriteAsColumnName(string columnName)
+        {
+            this.Write("AS ");
+            this.WriteColumnName(columnName);
         }
 
         protected virtual void WriteColumnName(string columnName)
@@ -140,10 +171,38 @@ namespace IQToolkit.Data.Common
             string name;
             if (!this.aliases.TryGetValue(alias, out name))
             {
-                name = "t" + this.aliases.Count;
+                name = "A" + alias.GetHashCode() + "?";
                 this.aliases.Add(alias, name);
             }
             return name;
+        }
+
+        protected void AddAlias(TableAlias alias)
+        {
+            string name;
+            if (!this.aliases.TryGetValue(alias, out name))
+            {
+                name = "t" + this.aliases.Count;
+                this.aliases.Add(alias, name);
+            }
+        }
+
+        protected virtual void AddAliases(Expression expr)
+        {
+            AliasedExpression ax = expr as AliasedExpression;
+            if (ax != null)
+            {
+                this.AddAlias(ax.Alias);
+            }
+            else
+            {
+                JoinExpression jx = expr as JoinExpression;
+                if (jx != null)
+                {
+                    this.AddAliases(jx.Left);
+                    this.AddAliases(jx.Right);
+                }
+            }
         }
 
         protected override Expression Visit(Expression exp)
@@ -226,13 +285,33 @@ namespace IQToolkit.Data.Common
                 case ExpressionType.MemberInit:
                 case ExpressionType.ListInit:
                 default:
-                    throw new NotSupportedException(string.Format("The LINQ expression node of type {0} is not supported", exp.NodeType));
+                    if (!forDebug)
+                    {
+                        throw new NotSupportedException(string.Format("The LINQ expression node of type {0} is not supported", exp.NodeType));
+                    }
+                    else
+                    {
+                        this.Write(string.Format("?{0}?(", exp.NodeType));
+                        base.Visit(exp);
+                        this.Write(")");
+                        return exp;
+                    }
             }
         }
 
         protected override Expression VisitMemberAccess(MemberExpression m)
         {
-            throw new NotSupportedException(string.Format("The member access '{0}' is not supported", m.Member));
+            if (this.forDebug)
+            {
+                this.Visit(m.Expression);
+                this.Write(".");
+                this.Write(m.Member.Name);
+                return m;
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("The member access '{0}' is not supported", m.Member));
+            }
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression m)
@@ -296,7 +375,28 @@ namespace IQToolkit.Data.Common
                     return m;
                 }
             }
-            throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+            if (this.forDebug)
+            {
+                if (m.Object != null)
+                {
+                    this.Visit(m.Object);
+                    this.Write(".");
+                }
+                this.Write(string.Format("?{0}?", m.Method.Name));
+                this.Write("(");
+                for (int i = 0; i < m.Arguments.Count; i++)
+                {
+                    if (i > 0)
+                        this.Write(", ");
+                    this.Visit(m.Arguments[i]);
+                }
+                this.Write(")");
+                return m;
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+            }
         }
 
         protected virtual bool IsInteger(Type type)
@@ -306,7 +406,24 @@ namespace IQToolkit.Data.Common
 
         protected override NewExpression VisitNew(NewExpression nex)
         {
-            throw new NotSupportedException(string.Format("The construtor for '{0}' is not supported", nex.Constructor.DeclaringType));
+            if (this.forDebug)
+            {
+                this.Write("?new?");
+                this.Write(nex.Type.Name);
+                this.Write("(");
+                for (int i = 0; i < nex.Arguments.Count; i++)
+                {
+                    if (i > 0)
+                        this.Write(", ");
+                    this.Visit(nex.Arguments[i]);
+                }
+                this.Write(")");
+                return nex;
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("The construtor for '{0}' is not supported", nex.Constructor.DeclaringType));
+            }
         }
 
         protected override Expression VisitUnary(UnaryExpression u)
@@ -340,7 +457,18 @@ namespace IQToolkit.Data.Common
                     this.Visit(u.Operand);
                     break;
                 default:
-                    throw new NotSupportedException(string.Format("The unary operator '{0}' is not supported", u.NodeType));
+                    if (this.forDebug)
+                    {
+                        this.Write(string.Format("?{0}?", u.NodeType));
+                        this.Write("(");
+                        this.Visit(u.Operand);
+                        this.Write(")");
+                        return u;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(string.Format("The unary operator '{0}' is not supported", u.NodeType));
+                    }
             }
             return u;
         }
@@ -463,7 +591,20 @@ namespace IQToolkit.Data.Common
                     this.VisitValue(right);
                     break;
                 default:
-                    throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+                    if (this.forDebug)
+                    {
+                        this.Write(string.Format("?{0}?", b.NodeType));
+                        this.Write("(");
+                        this.Visit(b.Left);
+                        this.Write(", ");
+                        this.Visit(b.Right);
+                        this.Write(")");
+                        return b;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+                    }
             }
             this.Write(")");
             return b;
@@ -666,7 +807,7 @@ namespace IQToolkit.Data.Common
         protected override Expression VisitProjection(ProjectionExpression proj)
         {
             // treat these like scalar subqueries
-            if (proj.Projector is ColumnExpression)
+            if ((proj.Projector is ColumnExpression) || this.forDebug)
             {
                 this.Write("(");
                 this.WriteLine(Indentation.Inner);
@@ -683,6 +824,7 @@ namespace IQToolkit.Data.Common
 
         protected override Expression VisitSelect(SelectExpression select)
         {
+            this.AddAliases(select.From);
             this.Write("SELECT ");
             if (select.IsDistinct)
             {
@@ -760,8 +902,8 @@ namespace IQToolkit.Data.Common
                     ColumnExpression c = this.VisitValue(column.Expression) as ColumnExpression;
                     if (!string.IsNullOrEmpty(column.Name) && (c == null || c.Name != column.Name))
                     {
-                        this.Write(" AS ");
-                        this.WriteColumnName(column.Name);
+                        this.Write(" ");
+                        this.WriteAsColumnName(column.Name);
                     }
                 }
             }
@@ -770,8 +912,7 @@ namespace IQToolkit.Data.Common
                 this.Write("NULL ");
                 if (this.isNested)
                 {
-                    this.Write("AS ");
-                    this.WriteColumnName("tmp");
+                    this.WriteAsColumnName("tmp");
                     this.Write(" ");
                 }
             }
@@ -788,8 +929,8 @@ namespace IQToolkit.Data.Common
                     this.WriteTableName(table.Name);
                     if (!this.HideTableAliases)
                     {
-                        this.Write(" AS ");
-                        this.WriteAliasName(GetAliasName(table.Alias));
+                        this.Write(" ");
+                        this.WriteAsAliasName(GetAliasName(table.Alias));
                     }
                     break;
                 case DbExpressionType.Select:
@@ -798,9 +939,8 @@ namespace IQToolkit.Data.Common
                     this.WriteLine(Indentation.Inner);
                     this.Visit(select);
                     this.WriteLine(Indentation.Same);
-                    this.Write(")");
-                    this.Write(" AS ");
-                    this.WriteAliasName(GetAliasName(select.Alias));
+                    this.Write(") ");
+                    this.WriteAsAliasName(GetAliasName(select.Alias));
                     this.Indent(Indentation.Outer);
                     break;
                 case DbExpressionType.Join:
@@ -990,7 +1130,7 @@ namespace IQToolkit.Data.Common
             {
                 ColumnAssignment ca = insert.Assignments[i];
                 if (i > 0) this.Write(", ");
-                this.Write(ca.Column.Name);
+                this.WriteColumnName(ca.Column.Name);
             }
             this.Write(")");
             this.WriteLine(Indentation.Same);

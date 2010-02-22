@@ -149,6 +149,10 @@ namespace IQToolkit.Data.Common
         public ColumnExpression(Type type, QueryType queryType, TableAlias alias, string name)
             : base(DbExpressionType.Column, type)
         {
+            if (queryType == null)
+                throw new ArgumentNullException("queryType");
+            if (name == null)
+                throw new ArgumentNullException("name");
             this.alias = alias;
             this.name = name;
             this.queryType = queryType;
@@ -211,11 +215,19 @@ namespace IQToolkit.Data.Common
     {
         string name;
         Expression expression;
+        QueryType queryType;
 
-        public ColumnDeclaration(string name, Expression expression)
+        public ColumnDeclaration(string name, Expression expression, QueryType queryType)
         {
+            if (name == null)
+                throw new ArgumentNullException("name");
+            if (expression == null)
+                throw new ArgumentNullException("expression");
+            if (queryType == null)
+                throw new ArgumentNullException("queryType");
             this.name = name;
             this.expression = expression;
+            this.queryType = queryType;
         }
 
         public string Name
@@ -226,6 +238,11 @@ namespace IQToolkit.Data.Common
         public Expression Expression
         {
             get { return this.expression; }
+        }
+
+        public QueryType QueryType
+        {
+            get { return this.queryType; }
         }
     }
 
@@ -355,7 +372,7 @@ namespace IQToolkit.Data.Common
         }
         public string QueryText
         {
-            get { return SqlFormatter.Format(this); }
+            get { return SqlFormatter.Format(this, true); }
         }
     }
 
@@ -596,6 +613,12 @@ namespace IQToolkit.Data.Common
         public NamedValueExpression(string name, QueryType queryType, Expression value)
             : base(DbExpressionType.NamedValue, value.Type)
         {
+            if (name == null)
+                throw new ArgumentNullException("name");
+            //if (queryType == null)
+                //throw new ArgumentNullException("queryType");
+            if (value == null)
+                throw new ArgumentNullException("value");
             this.name = name;
             this.queryType = queryType;
             this.value = value;
@@ -659,7 +682,7 @@ namespace IQToolkit.Data.Common
         }
         public string QueryText
         {
-            get { return SqlFormatter.Format(select); }
+            get { return SqlFormatter.Format(select, true); }
         }
     }
 
