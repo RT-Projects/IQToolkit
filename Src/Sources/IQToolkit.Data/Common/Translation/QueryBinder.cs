@@ -350,34 +350,27 @@ namespace IQToolkit.Data.Common
             if (project == null)
                 throw new ArgumentException("insert.Query was expected to be a ProjectionExpression");
 
-            var columnDeclarations = new List<ColumnDeclaration>();
-            var columnNames = new List<string>();
-
             if (project.Projector is ConstantExpression)
-            {
                 return this.Visit(this.mapper.GetInsertExpression(insert.Table.Entity, project.Projector, null));
-            }
-            else if (project.Projector is MemberInitExpression)
+
+            if (project.Projector is MemberInitExpression)
             {
                 var memberInit = (MemberInitExpression) project.Projector;
-                if (!memberInit.Type.Equals(insert.Table.Entity.ElementType))
-                    throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
-
-                foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
+                if (memberInit.Type.Equals(insert.Table.Entity.ElementType))
                 {
-                    var type = (binding.Member is FieldInfo) ? ((FieldInfo) binding.Member).FieldType : ((PropertyInfo) binding.Member).PropertyType;
-                    columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression, this.language.TypeSystem.GetColumnType(type)));
-                    columnNames.Add(binding.Member.Name);
+                    var columnDeclarations = new List<ColumnDeclaration>();
+                    var columnNames = new List<string>();
+                    foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
+                    {
+                        var type = (binding.Member is FieldInfo) ? ((FieldInfo) binding.Member).FieldType : ((PropertyInfo) binding.Member).PropertyType;
+                        columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression, this.language.TypeSystem.GetColumnType(type)));
+                        columnNames.Add(binding.Member.Name);
+                    }
+                    return UpdateInsertQuery(insert, insert.Table, new SelectExpression(new TableAlias(), columnDeclarations, project.Select, null), columnNames);
                 }
             }
-            else
-            {
-                throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
-            }
 
-            var alias = new TableAlias();
-            var select = new SelectExpression(alias, columnDeclarations, project.Select, null);
-            return UpdateInsertQuery(insert, insert.Table, select, columnNames);
+            throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
         }
 
         private Expression BindWhere(Type resultType, Expression source, LambdaExpression predicate)

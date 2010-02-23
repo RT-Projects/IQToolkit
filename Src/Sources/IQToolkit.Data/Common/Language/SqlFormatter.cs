@@ -737,14 +737,7 @@ namespace IQToolkit.Data.Common
 
         protected override Expression VisitConditional(ConditionalExpression c)
         {
-            this.Write("CASE WHEN ");
-            this.Visit(c.Test);
-            this.Write(" THEN ");
-            this.Visit(c.IfTrue);
-            this.Write(" ELSE ");
-            this.Visit(c.IfFalse);
-            this.Write(" END");
-            return c;
+            throw new NotSupportedException(string.Format("Conditional expressions not supported"));
         }
 
         protected override Expression VisitConstant(ConstantExpression c)
