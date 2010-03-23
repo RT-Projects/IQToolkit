@@ -567,9 +567,9 @@ namespace IQToolkit.Data.SQLite
         {
             if (column.Type == typeof(DateTime) || column.Type == typeof(Nullable<DateTime>))
             {
-                this.Write("strftime('%Y-%m-%d %H:%M:%f', ");
+                // this.Write("strftime('%Y-%m-%d %H:%M:%f', ");
                 var c = base.VisitColumn(column);
-                this.Write(")");
+                // this.Write(")");
                 return c;
             }
             else
