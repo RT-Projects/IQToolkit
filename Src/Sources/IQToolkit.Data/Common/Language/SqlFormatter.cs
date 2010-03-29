@@ -395,7 +395,11 @@ namespace IQToolkit.Data.Common
             }
             else
             {
-                throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+                throw new NotSupportedException(string.Format("The method '{0} {1}.{2}({3})' is not supported",
+                    m.Method.ReturnType.Name,
+                    m.Method.DeclaringType.Name,
+                    m.Method.Name,
+                    string.Join(", ", m.Method.GetParameters().Select(p => p.ParameterType.Name).ToArray())));
             }
         }
 
