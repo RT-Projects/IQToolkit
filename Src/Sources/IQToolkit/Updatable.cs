@@ -353,5 +353,20 @@ namespace IQToolkit
         {
             return Batch<U, T, S>(collection, instances, fnOperation, 50, false);
         }
+
+        public static void InsertAll<T>(this IUpdatable<T> collection, IEnumerable<T> instances)
+        {
+            Batch(collection, instances, (table, instance) => table.Insert(instance));
+        }
+
+        public static IEnumerable<R> InsertAll<T, R>(this IUpdatable<T> collection, IEnumerable<T> instances, Expression<Func<T, R>> resultSelector)
+        {
+            return Batch(collection, instances, (table, instance) => table.Insert(instance, resultSelector));
+        }
+
+        public static void DeleteAll<T>(this IUpdatable<T> collection, IEnumerable<T> instances)
+        {
+            Batch(collection, instances, (table, instance) => table.Delete(instance));
+        }
     }
 }
