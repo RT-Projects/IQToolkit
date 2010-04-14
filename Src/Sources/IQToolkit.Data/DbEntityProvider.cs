@@ -387,11 +387,13 @@ namespace IQToolkit.Data
                     // use data table to buffer results
                     var ds = new DataSet();
                     ds.EnforceConstraints = false;
-                    var table = new DataTable();
-                    ds.Tables.Add(table);
-                    ds.EnforceConstraints = false;
-                    table.Load(reader);
-                    reader = table.CreateDataReader();
+                    using (var table = new DataTable())
+                    {
+                        ds.Tables.Add(table);
+                        ds.EnforceConstraints = false;
+                        table.Load(reader);
+                        return table.CreateDataReader();
+                    }
                 }
                 return reader;
             }
