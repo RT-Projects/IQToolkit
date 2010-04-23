@@ -59,7 +59,7 @@ namespace IQToolkit.Data
 
         public virtual DbEntityProvider New(DbConnection connection, QueryMapping mapping, QueryPolicy policy)
         {
-            return (DbEntityProvider) Activator.CreateInstance(this.GetType(), new object[] { connection, mapping, policy });
+            return (DbEntityProvider)Activator.CreateInstance(this.GetType(), new object[] { connection, mapping, policy });
         }
 
         public virtual DbEntityProvider New(DbConnection connection)
@@ -103,7 +103,7 @@ namespace IQToolkit.Data
 
         public static DbEntityProvider From(string connectionString, QueryMapping mapping, QueryPolicy policy)
         {
-            return From((string) null, connectionString, mapping, policy);
+            return From((string)null, connectionString, mapping, policy);
         }
 
         public static DbEntityProvider From(string provider, string connectionString, string mappingId)
@@ -156,7 +156,7 @@ namespace IQToolkit.Data
             Type adoConnectionType = GetAdoConnectionType(providerType);
             if (adoConnectionType == null)
                 throw new InvalidOperationException(string.Format("Unable to deduce ADO provider for '{0}'", providerType.Name));
-            DbConnection connection = (DbConnection) Activator.CreateInstance(adoConnectionType);
+            DbConnection connection = (DbConnection)Activator.CreateInstance(adoConnectionType);
 
             // is the connection string just a filename?
             if (!connectionString.Contains('='))
@@ -164,13 +164,13 @@ namespace IQToolkit.Data
                 MethodInfo gcs = providerType.GetMethod("GetConnectionString", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(string) }, null);
                 if (gcs != null)
                 {
-                    connectionString = (string) gcs.Invoke(null, new object[] { connectionString });
+                    connectionString = (string)gcs.Invoke(null, new object[] { connectionString });
                 }
             }
 
             connection.ConnectionString = connectionString;
 
-            return (DbEntityProvider) Activator.CreateInstance(providerType, new object[] { connection, mapping, policy });
+            return (DbEntityProvider)Activator.CreateInstance(providerType, new object[] { connection, mapping, policy });
         }
 
         private static Type GetAdoConnectionType(Type providerType)
@@ -335,7 +335,7 @@ namespace IQToolkit.Data
                     {
                         if (vtype == typeof(string))
                         {
-                            return Enum.Parse(type, (string) value);
+                            return Enum.Parse(type, (string)value);
                         }
                         else
                         {
@@ -692,7 +692,7 @@ namespace IQToolkit.Data
 
             protected override T GetValue<T>(int ordinal)
             {
-                return (T) this.executor.Convert(this.reader.GetValue(ordinal), typeof(T));
+                return (T)this.executor.Convert(this.reader.GetValue(ordinal), typeof(T));
             }
 
             protected override Byte GetByte(int ordinal)

@@ -63,7 +63,7 @@ namespace IQToolkit.Data.Common
             get { return this.language; }
         }
 
-        protected bool HideColumnAliases
+        protected bool HideColumnAliases 
         {
             get { return this.hideColumnAliases; }
             set { this.hideColumnAliases = value; }
@@ -75,7 +75,7 @@ namespace IQToolkit.Data.Common
             set { this.hideTableAliases = value; }
         }
 
-        protected bool IsNested
+        protected bool IsNested 
         {
             get { return this.isNested; }
             set { this.isNested = value; }
@@ -247,29 +247,29 @@ namespace IQToolkit.Data.Common
                 case ExpressionType.MemberAccess:
                 case ExpressionType.Call:
                 case ExpressionType.New:
-                case (ExpressionType) DbExpressionType.Table:
-                case (ExpressionType) DbExpressionType.Column:
-                case (ExpressionType) DbExpressionType.Select:
-                case (ExpressionType) DbExpressionType.Join:
-                case (ExpressionType) DbExpressionType.Aggregate:
-                case (ExpressionType) DbExpressionType.Scalar:
-                case (ExpressionType) DbExpressionType.Exists:
-                case (ExpressionType) DbExpressionType.In:
-                case (ExpressionType) DbExpressionType.AggregateSubquery:
-                case (ExpressionType) DbExpressionType.IsNull:
-                case (ExpressionType) DbExpressionType.Between:
-                case (ExpressionType) DbExpressionType.RowCount:
-                case (ExpressionType) DbExpressionType.Projection:
-                case (ExpressionType) DbExpressionType.NamedValue:
-                case (ExpressionType) DbExpressionType.Insert:
-                case (ExpressionType) DbExpressionType.InsertQuery:
-                case (ExpressionType) DbExpressionType.Update:
-                case (ExpressionType) DbExpressionType.Delete:
-                case (ExpressionType) DbExpressionType.Block:
-                case (ExpressionType) DbExpressionType.If:
-                case (ExpressionType) DbExpressionType.Declaration:
-                case (ExpressionType) DbExpressionType.Variable:
-                case (ExpressionType) DbExpressionType.Function:
+                case (ExpressionType)DbExpressionType.Table:
+                case (ExpressionType)DbExpressionType.Column:
+                case (ExpressionType)DbExpressionType.Select:
+                case (ExpressionType)DbExpressionType.Join:
+                case (ExpressionType)DbExpressionType.Aggregate:
+                case (ExpressionType)DbExpressionType.Scalar:
+                case (ExpressionType)DbExpressionType.Exists:
+                case (ExpressionType)DbExpressionType.In:
+                case (ExpressionType)DbExpressionType.AggregateSubquery:
+                case (ExpressionType)DbExpressionType.IsNull:
+                case (ExpressionType)DbExpressionType.Between:
+                case (ExpressionType)DbExpressionType.RowCount:
+                case (ExpressionType)DbExpressionType.Projection:
+                case (ExpressionType)DbExpressionType.NamedValue:
+                case (ExpressionType)DbExpressionType.Insert:
+                case (ExpressionType)DbExpressionType.InsertQuery:
+                case (ExpressionType)DbExpressionType.Update:
+                case (ExpressionType)DbExpressionType.Delete:
+                case (ExpressionType)DbExpressionType.Block:
+                case (ExpressionType)DbExpressionType.If:
+                case (ExpressionType)DbExpressionType.Declaration:
+                case (ExpressionType)DbExpressionType.Variable:
+                case (ExpressionType)DbExpressionType.Function:
                     return base.Visit(exp);
 
                 case ExpressionType.ArrayLength:
@@ -510,7 +510,7 @@ namespace IQToolkit.Data.Common
                 case ExpressionType.Equal:
                     if (right.NodeType == ExpressionType.Constant)
                     {
-                        ConstantExpression ce = (ConstantExpression) right;
+                        ConstantExpression ce = (ConstantExpression)right;
                         if (ce.Value == null)
                         {
                             this.Visit(left);
@@ -520,7 +520,7 @@ namespace IQToolkit.Data.Common
                     }
                     else if (left.NodeType == ExpressionType.Constant)
                     {
-                        ConstantExpression ce = (ConstantExpression) left;
+                        ConstantExpression ce = (ConstantExpression)left;
                         if (ce.Value == null)
                         {
                             this.Visit(right);
@@ -532,7 +532,7 @@ namespace IQToolkit.Data.Common
                 case ExpressionType.NotEqual:
                     if (right.NodeType == ExpressionType.Constant)
                     {
-                        ConstantExpression ce = (ConstantExpression) right;
+                        ConstantExpression ce = (ConstantExpression)right;
                         if (ce.Value == null)
                         {
                             this.Visit(left);
@@ -542,7 +542,7 @@ namespace IQToolkit.Data.Common
                     }
                     else if (left.NodeType == ExpressionType.Constant)
                     {
-                        ConstantExpression ce = (ConstantExpression) left;
+                        ConstantExpression ce = (ConstantExpression)left;
                         if (ce.Value == null)
                         {
                             this.Visit(right);
@@ -558,9 +558,9 @@ namespace IQToolkit.Data.Common
                     // check for special x.CompareTo(y) && type.Compare(x,y)
                     if (left.NodeType == ExpressionType.Call && right.NodeType == ExpressionType.Constant)
                     {
-                        MethodCallExpression mc = (MethodCallExpression) left;
-                        ConstantExpression ce = (ConstantExpression) right;
-                        if (ce.Value != null && ce.Value.GetType() == typeof(int) && ((int) ce.Value) == 0)
+                        MethodCallExpression mc = (MethodCallExpression)left;
+                        ConstantExpression ce = (ConstantExpression)right;
+                        if (ce.Value != null && ce.Value.GetType() == typeof(int) && ((int)ce.Value) == 0)
                         {
                             if (mc.Method.Name == "CompareTo" && !mc.Method.IsStatic && mc.Arguments.Count == 1)
                             {
@@ -703,22 +703,22 @@ namespace IQToolkit.Data.Common
                 case ExpressionType.AndAlso:
                 case ExpressionType.Or:
                 case ExpressionType.OrElse:
-                    return IsBoolean(((BinaryExpression) expr).Type);
+                    return IsBoolean(((BinaryExpression)expr).Type);
                 case ExpressionType.Not:
-                    return IsBoolean(((UnaryExpression) expr).Type);
+                    return IsBoolean(((UnaryExpression)expr).Type);
                 case ExpressionType.Equal:
                 case ExpressionType.NotEqual:
                 case ExpressionType.LessThan:
                 case ExpressionType.LessThanOrEqual:
                 case ExpressionType.GreaterThan:
                 case ExpressionType.GreaterThanOrEqual:
-                case (ExpressionType) DbExpressionType.IsNull:
-                case (ExpressionType) DbExpressionType.Between:
-                case (ExpressionType) DbExpressionType.Exists:
-                case (ExpressionType) DbExpressionType.In:
+                case (ExpressionType)DbExpressionType.IsNull:
+                case (ExpressionType)DbExpressionType.Between:
+                case (ExpressionType)DbExpressionType.Exists:
+                case (ExpressionType)DbExpressionType.In:
                     return true;
                 case ExpressionType.Call:
-                    return IsBoolean(((MethodCallExpression) expr).Type);
+                    return IsBoolean(((MethodCallExpression)expr).Type);
                 default:
                     return false;
             }
@@ -765,7 +765,7 @@ namespace IQToolkit.Data.Common
                 switch (Type.GetTypeCode(value.GetType()))
                 {
                     case TypeCode.Boolean:
-                        this.Write(((bool) value) ? 1 : 0);
+                        this.Write(((bool)value) ? 1 : 0);
                         break;
                     case TypeCode.String:
                         this.Write("'");
@@ -919,10 +919,10 @@ namespace IQToolkit.Data.Common
         {
             bool saveIsNested = this.isNested;
             this.isNested = true;
-            switch ((DbExpressionType) source.NodeType)
+            switch ((DbExpressionType)source.NodeType)
             {
                 case DbExpressionType.Table:
-                    TableExpression table = (TableExpression) source;
+                    TableExpression table = (TableExpression)source;
                     this.WriteTableName(table.Name);
                     if (!this.HideTableAliases)
                     {
@@ -931,7 +931,7 @@ namespace IQToolkit.Data.Common
                     }
                     break;
                 case DbExpressionType.Select:
-                    SelectExpression select = (SelectExpression) source;
+                    SelectExpression select = (SelectExpression)source;
                     this.Write("(");
                     this.WriteLine(Indentation.Inner);
                     this.Visit(select);
@@ -941,7 +941,7 @@ namespace IQToolkit.Data.Common
                     this.Indent(Indentation.Outer);
                     break;
                 case DbExpressionType.Join:
-                    this.VisitJoin((JoinExpression) source);
+                    this.VisitJoin((JoinExpression)source);
                     break;
                 default:
                     throw new InvalidOperationException("Select source is not valid type");
@@ -1099,7 +1099,7 @@ namespace IQToolkit.Data.Common
                     this.Write(")");
                 }
             }
-            else
+            else 
             {
                 this.VisitValue(@in.Expression);
                 this.Write(" IN (");

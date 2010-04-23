@@ -58,52 +58,52 @@ namespace IQToolkit.Data.Common
                 return false;
             if (a.Type != b.Type)
                 return false;
-            switch ((DbExpressionType) a.NodeType)
+            switch ((DbExpressionType)a.NodeType)
             {
                 case DbExpressionType.Table:
-                    return this.CompareTable((TableExpression) a, (TableExpression) b);
+                    return this.CompareTable((TableExpression)a, (TableExpression)b);
                 case DbExpressionType.Column:
-                    return this.CompareColumn((ColumnExpression) a, (ColumnExpression) b);
+                    return this.CompareColumn((ColumnExpression)a, (ColumnExpression)b);
                 case DbExpressionType.Select:
-                    return this.CompareSelect((SelectExpression) a, (SelectExpression) b);
+                    return this.CompareSelect((SelectExpression)a, (SelectExpression)b);
                 case DbExpressionType.Join:
-                    return this.CompareJoin((JoinExpression) a, (JoinExpression) b);
+                    return this.CompareJoin((JoinExpression)a, (JoinExpression)b);
                 case DbExpressionType.Aggregate:
-                    return this.CompareAggregate((AggregateExpression) a, (AggregateExpression) b);
+                    return this.CompareAggregate((AggregateExpression)a, (AggregateExpression)b);
                 case DbExpressionType.Scalar:
                 case DbExpressionType.Exists:
                 case DbExpressionType.In:
-                    return this.CompareSubquery((SubqueryExpression) a, (SubqueryExpression) b);
+                    return this.CompareSubquery((SubqueryExpression)a, (SubqueryExpression)b);
                 case DbExpressionType.AggregateSubquery:
-                    return this.CompareAggregateSubquery((AggregateSubqueryExpression) a, (AggregateSubqueryExpression) b);
+                    return this.CompareAggregateSubquery((AggregateSubqueryExpression)a, (AggregateSubqueryExpression)b);
                 case DbExpressionType.IsNull:
-                    return this.CompareIsNull((IsNullExpression) a, (IsNullExpression) b);
+                    return this.CompareIsNull((IsNullExpression)a, (IsNullExpression)b);
                 case DbExpressionType.Between:
-                    return this.CompareBetween((BetweenExpression) a, (BetweenExpression) b);
+                    return this.CompareBetween((BetweenExpression)a, (BetweenExpression)b);
                 case DbExpressionType.RowCount:
-                    return this.CompareRowNumber((RowNumberExpression) a, (RowNumberExpression) b);
+                    return this.CompareRowNumber((RowNumberExpression)a, (RowNumberExpression)b);
                 case DbExpressionType.Projection:
-                    return this.CompareProjection((ProjectionExpression) a, (ProjectionExpression) b);
+                    return this.CompareProjection((ProjectionExpression)a, (ProjectionExpression)b);
                 case DbExpressionType.NamedValue:
-                    return this.CompareNamedValue((NamedValueExpression) a, (NamedValueExpression) b);
+                    return this.CompareNamedValue((NamedValueExpression)a, (NamedValueExpression)b);
                 case DbExpressionType.Insert:
-                    return this.CompareInsert((InsertCommand) a, (InsertCommand) b);
+                    return this.CompareInsert((InsertCommand)a, (InsertCommand)b);
                 case DbExpressionType.InsertQuery:
                     return this.CompareInsertQuery((InsertQueryCommand) a, (InsertQueryCommand) b);
                 case DbExpressionType.Update:
-                    return this.CompareUpdate((UpdateCommand) a, (UpdateCommand) b);
+                    return this.CompareUpdate((UpdateCommand)a, (UpdateCommand)b);
                 case DbExpressionType.Delete:
-                    return this.CompareDelete((DeleteCommand) a, (DeleteCommand) b);
+                    return this.CompareDelete((DeleteCommand)a, (DeleteCommand)b);
                 case DbExpressionType.Batch:
-                    return this.CompareBatch((BatchExpression) a, (BatchExpression) b);
+                    return this.CompareBatch((BatchExpression)a, (BatchExpression)b);
                 case DbExpressionType.Function:
-                    return this.CompareFunction((FunctionExpression) a, (FunctionExpression) b);
+                    return this.CompareFunction((FunctionExpression)a, (FunctionExpression)b);
                 case DbExpressionType.Entity:
-                    return this.CompareEntity((EntityExpression) a, (EntityExpression) b);
+                    return this.CompareEntity((EntityExpression)a, (EntityExpression)b);
                 case DbExpressionType.If:
-                    return this.CompareIf((IFCommand) a, (IFCommand) b);
+                    return this.CompareIf((IFCommand)a, (IFCommand)b);
                 case DbExpressionType.Block:
-                    return this.CompareBlock((BlockCommand) a, (BlockCommand) b);
+                    return this.CompareBlock((BlockCommand)a, (BlockCommand)b);
                 default:
                     return base.Compare(a, b);
             }
@@ -119,7 +119,7 @@ namespace IQToolkit.Data.Common
             return this.CompareAlias(a.Alias, b.Alias) && a.Name == b.Name;
         }
 
-        protected virtual bool CompareAlias(TableAlias a, TableAlias b)
+        protected virtual bool CompareAlias(TableAlias a, TableAlias b)        
         {
             if (this.aliasScope != null)
             {
@@ -160,7 +160,7 @@ namespace IQToolkit.Data.Common
         {
             TableAlias[] prodA = DeclaredAliasGatherer.Gather(a).ToArray();
             TableAlias[] prodB = DeclaredAliasGatherer.Gather(b).ToArray();
-            for (int i = 0, n = prodA.Length; i < n; i++)
+            for (int i = 0, n = prodA.Length; i < n; i++) 
             {
                 this.aliasScope.Add(prodA[i], prodB[i]);
             }
@@ -263,14 +263,14 @@ namespace IQToolkit.Data.Common
         {
             if (a.NodeType != b.NodeType)
                 return false;
-            switch ((DbExpressionType) a.NodeType)
+            switch ((DbExpressionType)a.NodeType)
             {
                 case DbExpressionType.Scalar:
-                    return this.CompareScalar((ScalarExpression) a, (ScalarExpression) b);
+                    return this.CompareScalar((ScalarExpression)a, (ScalarExpression)b);
                 case DbExpressionType.Exists:
-                    return this.CompareExists((ExistsExpression) a, (ExistsExpression) b);
+                    return this.CompareExists((ExistsExpression)a, (ExistsExpression)b);
                 case DbExpressionType.In:
-                    return this.CompareIn((InExpression) a, (InExpression) b);
+                    return this.CompareIn((InExpression)a, (InExpression)b);
             }
             return false;
         }

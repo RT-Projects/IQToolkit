@@ -24,10 +24,10 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                (MethodInfo) MethodInfo.GetCurrentMethod(),
+                (MethodInfo)MethodInfo.GetCurrentMethod(),
                 collection.Expression,
                 Expression.Constant(instance),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
                 );
             return collection.Provider.Execute(callMyself);
         }
@@ -45,12 +45,12 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
                 collection.Expression,
                 Expression.Constant(instance),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T, S>>))
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T,S>>))
                 );
-            return (S) collection.Provider.Execute(callMyself);
+            return (S)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -87,11 +87,11 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                (MethodInfo) MethodInfo.GetCurrentMethod(),
+                (MethodInfo)MethodInfo.GetCurrentMethod(),
                 collection.Expression,
                 Expression.Constant(instance),
-                updateCheck != null ? (Expression) Expression.Quote(updateCheck) : Expression.Constant(null, typeof(LambdaExpression)),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
+                updateCheck != null ? (Expression)Expression.Quote(updateCheck) : Expression.Constant(null, typeof(LambdaExpression)),
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
                 );
             return collection.Provider.Execute(callMyself);
         }
@@ -111,13 +111,13 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
                 collection.Expression,
                 Expression.Constant(instance),
-                updateCheck != null ? (Expression) Expression.Quote(updateCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>)),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T, S>>))
+                updateCheck != null ? (Expression)Expression.Quote(updateCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>)),
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T, S>>))
                 );
-            return (S) collection.Provider.Execute(callMyself);
+            return (S)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -170,11 +170,11 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                (MethodInfo) MethodInfo.GetCurrentMethod(),
+                (MethodInfo)MethodInfo.GetCurrentMethod(),
                 collection.Expression,
                 Expression.Constant(instance),
-                updateCheck != null ? (Expression) Expression.Quote(updateCheck) : Expression.Constant(null, typeof(LambdaExpression)),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
+                updateCheck != null ? (Expression)Expression.Quote(updateCheck) : Expression.Constant(null, typeof(LambdaExpression)),
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(LambdaExpression))
                 );
             return collection.Provider.Execute(callMyself);
         }
@@ -194,13 +194,13 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T), typeof(S)),
                 collection.Expression,
                 Expression.Constant(instance),
-                updateCheck != null ? (Expression) Expression.Quote(updateCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>)),
-                resultSelector != null ? (Expression) Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T, S>>))
+                updateCheck != null ? (Expression)Expression.Quote(updateCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>)),
+                resultSelector != null ? (Expression)Expression.Quote(resultSelector) : Expression.Constant(null, typeof(Expression<Func<T, S>>))
                 );
-            return (S) collection.Provider.Execute(callMyself);
+            return (S)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -232,10 +232,10 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                (MethodInfo) MethodInfo.GetCurrentMethod(),
+                (MethodInfo)MethodInfo.GetCurrentMethod(),
                 collection.Expression,
                 Expression.Constant(instance),
-                deleteCheck != null ? (Expression) Expression.Quote(deleteCheck) : Expression.Constant(null, typeof(LambdaExpression))
+                deleteCheck != null ? (Expression)Expression.Quote(deleteCheck) : Expression.Constant(null, typeof(LambdaExpression))
                 );
             return collection.Provider.Execute(callMyself);
         }
@@ -252,12 +252,12 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T)),
                 collection.Expression,
                 Expression.Constant(instance),
-                deleteCheck != null ? (Expression) Expression.Quote(deleteCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>))
+                deleteCheck != null ? (Expression)Expression.Quote(deleteCheck) : Expression.Constant(null, typeof(Expression<Func<T, bool>>))
                 );
-            return (int) collection.Provider.Execute(callMyself);
+            return (int)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -276,11 +276,11 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()),
                 collection.Expression,
-                predicate != null ? (Expression) Expression.Quote(predicate) : Expression.Constant(null, typeof(LambdaExpression))
+                predicate != null ? (Expression)Expression.Quote(predicate) : Expression.Constant(null, typeof(LambdaExpression))
                 );
-            return (int) collection.Provider.Execute(callMyself);
+            return (int)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -294,25 +294,25 @@ namespace IQToolkit
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(T)),
                 collection.Expression,
-                predicate != null ? (Expression) Expression.Quote(predicate) : Expression.Constant(null, typeof(Expression<Func<T, bool>>))
+                predicate != null ? (Expression)Expression.Quote(predicate) : Expression.Constant(null, typeof(Expression<Func<T, bool>>))
                 );
-            return (int) collection.Provider.Execute(callMyself);
+            return (int)collection.Provider.Execute(callMyself);
         }
 
         public static IEnumerable Batch(IUpdatable collection, IEnumerable items, LambdaExpression fnOperation, int batchSize, bool stream)
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()),
                 collection.Expression,
                 Expression.Constant(items),
-                fnOperation != null ? (Expression) Expression.Quote(fnOperation) : Expression.Constant(null, typeof(LambdaExpression)),
+                fnOperation != null ? (Expression)Expression.Quote(fnOperation) : Expression.Constant(null, typeof(LambdaExpression)),
                 Expression.Constant(batchSize),
                 Expression.Constant(stream)
                 );
-            return (IEnumerable) collection.Provider.Execute(callMyself);
+            return (IEnumerable)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>
@@ -326,18 +326,18 @@ namespace IQToolkit
         /// <param name="batchSize">The maximum size of each batch.</param>
         /// <param name="stream">If true then execution is deferred until the resulting sequence is enumerated.</param>
         /// <returns>A sequence of results cooresponding to each invocation.</returns>
-        public static IEnumerable<S> Batch<U, T, S>(this IUpdatable<U> collection, IEnumerable<T> instances, Expression<Func<IUpdatable<U>, T, S>> fnOperation, int batchSize, bool stream)
+        public static IEnumerable<S> Batch<U,T,S>(this IUpdatable<U> collection, IEnumerable<T> instances, Expression<Func<IUpdatable<U>, T, S>> fnOperation, int batchSize, bool stream)
         {
             var callMyself = Expression.Call(
                 null,
-                ((MethodInfo) MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(U), typeof(T), typeof(S)),
+                ((MethodInfo)MethodInfo.GetCurrentMethod()).MakeGenericMethod(typeof(U), typeof(T), typeof(S)),
                 collection.Expression,
                 Expression.Constant(instances),
-                fnOperation != null ? (Expression) Expression.Quote(fnOperation) : Expression.Constant(null, typeof(Expression<Func<IUpdatable<U>, T, S>>)),
+                fnOperation != null ? (Expression)Expression.Quote(fnOperation) : Expression.Constant(null, typeof(Expression<Func<IUpdatable<U>, T, S>>)),
                 Expression.Constant(batchSize),
                 Expression.Constant(stream)
                 );
-            return (IEnumerable<S>) collection.Provider.Execute(callMyself);
+            return (IEnumerable<S>)collection.Provider.Execute(callMyself);
         }
 
         /// <summary>

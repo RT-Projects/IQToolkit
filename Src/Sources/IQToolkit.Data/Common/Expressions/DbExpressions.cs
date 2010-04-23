@@ -51,14 +51,14 @@ namespace IQToolkit.Data.Common
     {
         public static bool IsDbExpression(this ExpressionType et)
         {
-            return ((int) et) >= 1000;
+            return ((int)et) >= 1000;
         }
     }
 
     public abstract class DbExpression : Expression
     {
         protected DbExpression(DbExpressionType eType, Type type)
-            : base((ExpressionType) eType, type)
+            : base((ExpressionType)eType, type)
         {
         }
 
@@ -191,7 +191,7 @@ namespace IQToolkit.Data.Common
         public bool Equals(ColumnExpression other)
         {
             return other != null
-                && ((object) this) == (object) other
+                && ((object)this) == (object)other
                  || (alias == other.alias && name == other.Name);
         }
     }
@@ -724,7 +724,7 @@ namespace IQToolkit.Data.Common
         Expression stream;
 
         public BatchExpression(Expression input, LambdaExpression operation, Expression batchSize, Expression stream)
-            : base((ExpressionType) DbExpressionType.Batch, typeof(IEnumerable<>).MakeGenericType(operation.Body.Type))
+            : base((ExpressionType)DbExpressionType.Batch, typeof(IEnumerable<>).MakeGenericType(operation.Body.Type))
         {
             this.input = input;
             this.operation = operation;
@@ -934,7 +934,7 @@ namespace IQToolkit.Data.Common
             this.ifFalse = ifFalse;
         }
 
-        public Expression Check
+        public Expression Check 
         {
             get { return this.check; }
         }
@@ -944,7 +944,7 @@ namespace IQToolkit.Data.Common
             get { return this.ifTrue; }
         }
 
-        public Expression IfFalse
+        public Expression IfFalse 
         {
             get { return this.ifFalse; }
         }
@@ -955,13 +955,13 @@ namespace IQToolkit.Data.Common
         ReadOnlyCollection<Expression> commands;
 
         public BlockCommand(IList<Expression> commands)
-            : base(DbExpressionType.Block, commands[commands.Count - 1].Type)
+            : base(DbExpressionType.Block, commands[commands.Count-1].Type)
         {
             this.commands = commands.ToReadOnly();
         }
 
-        public BlockCommand(params Expression[] commands)
-            : this((IList<Expression>) commands)
+        public BlockCommand(params Expression[] commands) 
+            : this((IList<Expression>)commands)
         {
         }
 
@@ -1029,7 +1029,7 @@ namespace IQToolkit.Data.Common
         QueryType queryType;
 
         public VariableExpression(string name, Type type, QueryType queryType)
-            : base((ExpressionType) DbExpressionType.Variable, type)
+            : base((ExpressionType)DbExpressionType.Variable, type)
         {
             this.name = name;
             this.queryType = queryType;

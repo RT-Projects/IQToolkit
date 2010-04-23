@@ -40,11 +40,11 @@ namespace IQToolkit.Data.Common
         {
             while (e.NodeType == ExpressionType.Quote)
             {
-                e = ((UnaryExpression) e).Operand;
+                e = ((UnaryExpression)e).Operand;
             }
             if (e.NodeType == ExpressionType.Constant)
             {
-                return ((ConstantExpression) e).Value as LambdaExpression;
+                return ((ConstantExpression)e).Value as LambdaExpression;
             }
             return e as LambdaExpression;
         }
@@ -192,11 +192,11 @@ namespace IQToolkit.Data.Common
                         break;
                 }
             }
-            else if (typeof(Updatable).IsAssignableFrom(m.Method.DeclaringType))
+            else if (typeof(Updatable).IsAssignableFrom(m.Method.DeclaringType)) 
             {
                 IEntityTable upd = this.batchUpd != null
                     ? this.batchUpd
-                    : (IEntityTable) ((ConstantExpression) m.Arguments[0]).Value;
+                    : (IEntityTable)((ConstantExpression)m.Arguments[0]).Value;
 
                 switch (m.Method.Name)
                 {
@@ -206,7 +206,7 @@ namespace IQToolkit.Data.Common
 
                         return this.BindInsert(
                             upd,
-                            m.Arguments[1],
+                            m.Arguments[1], 
                             m.Arguments.Count > 2 ? GetLambda(m.Arguments[2]) : null
                             );
                     case "Update":
@@ -220,8 +220,8 @@ namespace IQToolkit.Data.Common
                         }
                         return this.BindUpdate(
                             upd,
-                            m.Arguments[1],
-                            m.Arguments.Count > 2 ? GetLambda(m.Arguments[2]) : null,
+                            m.Arguments[1], 
+                            m.Arguments.Count > 2 ? GetLambda(m.Arguments[2]) : null, 
                             m.Arguments.Count > 3 ? GetLambda(m.Arguments[3]) : null
                             );
                     case "InsertOrUpdate":
@@ -238,7 +238,7 @@ namespace IQToolkit.Data.Common
                         }
                         return this.BindDelete(
                             upd,
-                            m.Arguments[1],
+                            m.Arguments[1], 
                             m.Arguments.Count > 2 ? GetLambda(m.Arguments[2]) : null
                             );
                     case "Batch":
@@ -254,10 +254,10 @@ namespace IQToolkit.Data.Common
             if (this.language.IsAggregate(m.Method))
             {
                 return this.BindAggregate(
-                    m.Arguments[0],
-                    m.Method.Name,
-                    m.Method.ReturnType,
-                    m.Arguments.Count > 1 ? GetLambda(m.Arguments[1]) : null,
+                    m.Arguments[0], 
+                    m.Method.Name, 
+                    m.Method.ReturnType, 
+                    m.Arguments.Count > 1 ? GetLambda(m.Arguments[1]) : null, 
                     m == this.root
                     );
             }
@@ -284,17 +284,17 @@ namespace IQToolkit.Data.Common
         {
             switch (expr.NodeType)
             {
-                case (ExpressionType) DbExpressionType.Projection:
-                    return (ProjectionExpression) expr;
+                case (ExpressionType)DbExpressionType.Projection:
+                    return (ProjectionExpression)expr;
                 case ExpressionType.New:
-                    NewExpression nex = (NewExpression) expr;
+                    NewExpression nex = (NewExpression)expr;
                     if (expr.Type.IsGenericType && expr.Type.GetGenericTypeDefinition() == typeof(Grouping<,>))
                     {
-                        return (ProjectionExpression) nex.Arguments[1];
+                        return (ProjectionExpression)nex.Arguments[1];
                     }
                     goto default;
                 case ExpressionType.MemberAccess:
-                    var bound = this.BindRelationshipProperty((MemberExpression) expr);
+                    var bound = this.BindRelationshipProperty((MemberExpression)expr);
                     if (bound.NodeType != ExpressionType.MemberAccess)
                         return this.ConvertToSequence(bound);
                     goto default;
@@ -427,7 +427,7 @@ namespace IQToolkit.Data.Common
                 defaultIfEmpty = true;
             }
 
-            ProjectionExpression collectionProjection = (ProjectionExpression) this.VisitSequence(collection);
+            ProjectionExpression collectionProjection = (ProjectionExpression)this.VisitSequence(collection);
             bool isTable = collectionProjection.Select.From is TableExpression;
             JoinType joinType = isTable ? JoinType.CrossJoin : defaultIfEmpty ? JoinType.OuterApply : JoinType.CrossApply;
             if (joinType == JoinType.OuterApply)
@@ -503,7 +503,7 @@ namespace IQToolkit.Data.Common
 
             this.map[outerKey.Parameters[0]] = outerProjection.Projector;
             var predicateLambda = Expression.Lambda(innerKey.Body.Equal(outerKey.Body), innerKey.Parameters[0]);
-            var callToWhere = Expression.Call(typeof(Enumerable), "Where", new Type[] { args[1] }, innerSource, predicateLambda);
+            var callToWhere = Expression.Call(typeof(Enumerable), "Where", new Type[] { args[1] }, innerSource, predicateLambda);           
             Expression group = this.Visit(callToWhere);
 
             this.map[resultSelector.Parameters[0]] = outerProjection.Projector;
@@ -535,7 +535,7 @@ namespace IQToolkit.Data.Common
                 for (int i = myThenBys.Count - 1; i >= 0; i--)
                 {
                     OrderExpression tb = myThenBys[i];
-                    LambdaExpression lambda = (LambdaExpression) tb.Expression;
+                    LambdaExpression lambda = (LambdaExpression)tb.Expression;
                     this.map[lambda.Parameters[0]] = projection.Projector;
                     orderings.Add(new OrderExpression(tb.OrderType, this.Visit(lambda.Body)));
                 }
@@ -626,7 +626,7 @@ namespace IQToolkit.Data.Common
             else
             {
                 // result must be IGrouping<K,E>
-                resultExpr =
+                resultExpr = 
                     Expression.New(
                         typeof(Grouping<,>).MakeGenericType(keyExpr.Type, subqueryElemExpr.Type).GetConstructors()[0],
                         new Expression[] { keyExpr, elementSubquery }
@@ -656,7 +656,7 @@ namespace IQToolkit.Data.Common
             // ignore converions 
             while (expression.NodeType == ExpressionType.Convert || expression.NodeType == ExpressionType.ConvertChecked)
             {
-                expression = ((UnaryExpression) expression).Operand;
+                expression = ((UnaryExpression)expression).Operand;
             }
             return expression as NewExpression;
         }
@@ -714,7 +714,7 @@ namespace IQToolkit.Data.Common
             if (argument != null && hasPredicateArg)
             {
                 // convert query.Count(predicate) into query.Where(predicate).Count()
-                source = Expression.Call(typeof(Queryable), "Where", new[] { TypeHelper.GetElementType(source.Type) }, source, argument);
+                source = Expression.Call(typeof(Queryable), "Where", new [] {TypeHelper.GetElementType(source.Type)}, source, argument);
                 argument = null;
                 argumentWasPredicate = true;
             }
@@ -830,7 +830,7 @@ namespace IQToolkit.Data.Common
         {
             while (expression.NodeType == ExpressionType.Convert)
             {
-                expression = ((UnaryExpression) expression).Operand;
+                expression = ((UnaryExpression)expression).Operand;
             }
             return expression.Type;
         }
@@ -874,7 +874,7 @@ namespace IQToolkit.Data.Common
             {
                 System.Diagnostics.Debug.Assert(!isRoot);
                 Expression where = null;
-                foreach (object value in (IEnumerable) constSource.Value)
+                foreach (object value in (IEnumerable)constSource.Value)
                 {
                     Expression expr = Expression.Invoke(predicate, Expression.Constant(value, predicate.Parameters[0].Type));
                     if (where == null)
@@ -922,7 +922,7 @@ namespace IQToolkit.Data.Common
                             new[] { new ColumnDeclaration("value", new AggregateExpression(typeof(int), "Count", null, false), colType) }
                             );
                         var colx = new ColumnExpression(typeof(int), colType, newSelect.Alias, "value");
-                        var exp = isAll
+                        var exp = isAll 
                             ? colx.Equal(Expression.Constant(0))
                             : colx.GreaterThan(Expression.Constant(0));
                         return new ProjectionExpression(
@@ -941,7 +941,7 @@ namespace IQToolkit.Data.Common
             {
                 System.Diagnostics.Debug.Assert(!isRoot);
                 List<Expression> values = new List<Expression>();
-                foreach (object value in (IEnumerable) constSource.Value)
+                foreach (object value in (IEnumerable)constSource.Value)
                 {
                     values.Add(Expression.Constant(Convert.ChangeType(value, match.Type), match.Type));
                 }
@@ -956,7 +956,7 @@ namespace IQToolkit.Data.Common
                 this.root = exp;
                 return this.Visit(exp);
             }
-            else
+            else 
             {
                 ProjectionExpression projection = this.VisitSequence(source);
                 match = this.Visit(match);
@@ -1022,7 +1022,7 @@ namespace IQToolkit.Data.Common
         {
             var save = this.batchUpd;
             this.batchUpd = upd;
-            var op = (LambdaExpression) this.Visit(operation);
+            var op = (LambdaExpression)this.Visit(operation);
             this.batchUpd = save;
             var items = this.Visit(instances);
             var size = this.Visit(batchSize);
@@ -1040,7 +1040,7 @@ namespace IQToolkit.Data.Common
         {
             if (this.IsQuery(c))
             {
-                IQueryable q = (IQueryable) c.Value;
+                IQueryable q = (IQueryable)c.Value;
                 IEntityTable t = q as IEntityTable;
                 if (t != null)
                 {
@@ -1089,9 +1089,9 @@ namespace IQToolkit.Data.Common
 
         protected override Expression VisitMemberAccess(MemberExpression m)
         {
-            if (m.Expression != null
-                && m.Expression.NodeType == ExpressionType.Parameter
-                && !this.map.ContainsKey((ParameterExpression) m.Expression)
+            if (m.Expression != null 
+                && m.Expression.NodeType == ExpressionType.Parameter 
+                && !this.map.ContainsKey((ParameterExpression)m.Expression)
                 && this.IsQuery(m))
             {
                 return this.VisitSequence(this.mapper.GetQueryExpression(this.mapper.Mapping.GetEntity(m.Member)));
@@ -1117,9 +1117,9 @@ namespace IQToolkit.Data.Common
             switch (expression.NodeType)
             {
                 case ExpressionType.MemberAccess:
-                    return IsRemoteQuery(((MemberExpression) expression).Expression);
+                    return IsRemoteQuery(((MemberExpression)expression).Expression);
                 case ExpressionType.Call:
-                    MethodCallExpression mc = (MethodCallExpression) expression;
+                    MethodCallExpression mc = (MethodCallExpression)expression;
                     if (mc.Object != null)
                         return IsRemoteQuery(mc.Object);
                     else if (mc.Arguments.Count > 0)
@@ -1133,8 +1133,8 @@ namespace IQToolkit.Data.Common
         {
             switch (source.NodeType)
             {
-                case (ExpressionType) DbExpressionType.Entity:
-                    EntityExpression ex = (EntityExpression) source;
+                case (ExpressionType)DbExpressionType.Entity:
+                    EntityExpression ex = (EntityExpression)source;
                     var result = BindMember(ex.Expression, member);
                     MemberExpression mex = result as MemberExpression;
                     if (mex != null && mex.Expression == ex.Expression && mex.Member == member)
@@ -1144,23 +1144,23 @@ namespace IQToolkit.Data.Common
                     return result;
 
                 case ExpressionType.Convert:
-                    UnaryExpression ux = (UnaryExpression) source;
+                    UnaryExpression ux = (UnaryExpression)source;
                     return BindMember(ux.Operand, member);
 
                 case ExpressionType.MemberInit:
-                    MemberInitExpression min = (MemberInitExpression) source;
+                    MemberInitExpression min = (MemberInitExpression)source;
                     for (int i = 0, n = min.Bindings.Count; i < n; i++)
                     {
                         MemberAssignment assign = min.Bindings[i] as MemberAssignment;
                         if (assign != null && MembersMatch(assign.Member, member))
-                        {
+                        {                            
                             return assign.Expression;
                         }
                     }
                     break;
 
                 case ExpressionType.New:
-                    NewExpression nex = (NewExpression) source;
+                    NewExpression nex = (NewExpression)source;
                     if (nex.Members != null)
                     {
                         for (int i = 0, n = nex.Members.Count; i < n; i++)
@@ -1180,15 +1180,15 @@ namespace IQToolkit.Data.Common
                     }
                     break;
 
-                case (ExpressionType) DbExpressionType.Projection:
+                case (ExpressionType)DbExpressionType.Projection:
                     // member access on a projection turns into a new projection w/ member access applied
-                    ProjectionExpression proj = (ProjectionExpression) source;
+                    ProjectionExpression proj = (ProjectionExpression)source;
                     Expression newProjector = BindMember(proj.Projector, member);
                     Type mt = TypeHelper.GetMemberType(member);
                     return new ProjectionExpression(proj.Select, newProjector, Aggregator.GetAggregator(mt, typeof(IEnumerable<>).MakeGenericType(mt)));
 
-                case (ExpressionType) DbExpressionType.OuterJoined:
-                    OuterJoinedExpression oj = (OuterJoinedExpression) source;
+                case (ExpressionType)DbExpressionType.OuterJoined:
+                    OuterJoinedExpression oj = (OuterJoinedExpression)source;
                     Expression em = BindMember(oj.Expression, member);
                     if (em is ColumnExpression)
                     {
@@ -1197,11 +1197,11 @@ namespace IQToolkit.Data.Common
                     return new OuterJoinedExpression(oj.Test, em);
 
                 case ExpressionType.Conditional:
-                    ConditionalExpression cex = (ConditionalExpression) source;
+                    ConditionalExpression cex = (ConditionalExpression)source;
                     return Expression.Condition(cex.Test, BindMember(cex.IfTrue, member), BindMember(cex.IfFalse, member));
 
                 case ExpressionType.Constant:
-                    ConstantExpression con = (ConstantExpression) source;
+                    ConstantExpression con = (ConstantExpression)source;
                     Type memberType = TypeHelper.GetMemberType(member);
                     if (con.Value == null)
                     {
@@ -1250,11 +1250,11 @@ namespace IQToolkit.Data.Common
             }
             if (a is MethodInfo && b is PropertyInfo)
             {
-                return a.Name == ((PropertyInfo) b).GetGetMethod().Name;
+                return a.Name == ((PropertyInfo)b).GetGetMethod().Name;
             }
             else if (a is PropertyInfo && b is MethodInfo)
             {
-                return ((PropertyInfo) a).GetGetMethod().Name == b.Name;
+                return ((PropertyInfo)a).GetGetMethod().Name == b.Name;
             }
             return false;
         }

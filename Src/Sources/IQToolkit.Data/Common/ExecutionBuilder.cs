@@ -81,12 +81,12 @@ namespace IQToolkit.Data.Common
             return Expression.Convert(Expression.Call(typeof(ExecutionBuilder), "Sequence", null, Expression.NewArrayInit(typeof(object), expressions)), last.Type);
         }
 
-        public static object Sequence(params object[] values)
+        public static object Sequence(params object[] values) 
         {
             return values[values.Length - 1];
         }
 
-        public static IEnumerable<R> Batch<T, R>(IEnumerable<T> items, Func<T, R> selector, bool stream)
+        public static IEnumerable<R> Batch<T, R>(IEnumerable<T> items, Func<T,R> selector, bool stream)
         {
             var result = items.Select(selector);
             if (!stream)
@@ -142,7 +142,7 @@ namespace IQToolkit.Data.Common
             {
                 return Expression.New(
                     typeof(CompoundKey).GetConstructors()[0],
-                    Expression.NewArrayInit(typeof(object), key.Select(k => (Expression) Expression.Convert(k, typeof(object))))
+                    Expression.NewArrayInit(typeof(object), key.Select(k => (Expression)Expression.Convert(k, typeof(object))))
                     );
             }
         }
@@ -165,7 +165,7 @@ namespace IQToolkit.Data.Common
             ParameterExpression kvp = Expression.Parameter(constructKVPair.Type, "kvp");
 
             // filter out nulls
-            if (join.Projection.Projector.NodeType == (ExpressionType) DbExpressionType.OuterJoined)
+            if (join.Projection.Projector.NodeType == (ExpressionType)DbExpressionType.OuterJoined)
             {
                 LambdaExpression pred = Expression.Lambda(
                     Expression.PropertyOrField(kvp, "Value").NotEqual(TypeHelper.GetNullConstant(join.Projection.Projector.Type)),
@@ -220,12 +220,12 @@ namespace IQToolkit.Data.Common
         private Expression ExecuteProjection(ProjectionExpression projection, bool okayToDefer)
         {
             // parameterize query
-            projection = (ProjectionExpression) this.Parameterize(projection);
+            projection = (ProjectionExpression)this.Parameterize(projection);
 
             if (this.scope != null)
             {
                 // also convert references to outer alias to named values!  these become SQL parameters too
-                projection = (ProjectionExpression) OuterParameterizer.Parameterize(this.scope.Alias, projection);
+                projection = (ProjectionExpression)OuterParameterizer.Parameterize(this.scope.Alias, projection);
             }
 
             string commandText = this.linguist.Format(projection.Select);
@@ -248,8 +248,8 @@ namespace IQToolkit.Data.Common
 
             var entity = EntityFinder.Find(projection.Projector);
 
-            string methExecute = okayToDefer
-                ? "ExecuteDeferred"
+            string methExecute = okayToDefer 
+                ? "ExecuteDeferred" 
                 : "Execute";
 
             // call low-level execute directly on supplied DbQueryProvider
@@ -279,7 +279,7 @@ namespace IQToolkit.Data.Common
                 var source = this.Visit(batch.Input);
                 var op = this.Visit(batch.Operation.Body);
                 var fn = Expression.Lambda(op, batch.Operation.Parameters[1]);
-                return Expression.Call(this.GetType(), "Batch", new Type[] { TypeHelper.GetElementType(source.Type), batch.Operation.Body.Type }, source, fn, batch.Stream);
+                return Expression.Call(this.GetType(), "Batch", new Type[] {TypeHelper.GetElementType(source.Type), batch.Operation.Body.Type}, source, fn, batch.Stream);
             }
         }
 
@@ -350,7 +350,7 @@ namespace IQToolkit.Data.Common
         {
             if (command == null)
                 return false;
-            switch ((DbExpressionType) command.NodeType)
+            switch ((DbExpressionType)command.NodeType)
             {
                 case DbExpressionType.Insert:
                 case DbExpressionType.InsertQuery:
@@ -419,7 +419,7 @@ namespace IQToolkit.Data.Common
                 new[] { new ColumnDeclaration("value", new AggregateExpression(typeof(int), "Count", null, false), colType) }
                 );
 
-            var projection =
+            var projection = 
                 new ProjectionExpression(
                     newSelect,
                     new ColumnExpression(typeof(int), colType, newSelect.Alias, "value"),
@@ -470,7 +470,7 @@ namespace IQToolkit.Data.Common
             // probably bad if we get here since we must not allow mulitple commands
             throw new InvalidOperationException("Declaration query not allowed for this langauge");
         }
-
+        
         protected virtual Expression BuildExecuteCommand(CommandExpression command)
         {
             // parameterize query
@@ -504,7 +504,7 @@ namespace IQToolkit.Data.Common
         protected override Expression VisitOuterJoined(OuterJoinedExpression outer)
         {
             Expression expr = this.Visit(outer.Expression);
-            ColumnExpression column = (ColumnExpression) outer.Test;
+            ColumnExpression column = (ColumnExpression)outer.Test;
             ParameterExpression reader;
             int iOrdinal;
             if (this.scope.TryGetValue(column, out reader, out iOrdinal))
@@ -583,7 +583,7 @@ namespace IQToolkit.Data.Common
 
             protected override Expression VisitProjection(ProjectionExpression proj)
             {
-                SelectExpression select = (SelectExpression) this.Visit(proj.Select);
+                SelectExpression select = (SelectExpression)this.Visit(proj.Select);
                 return this.UpdateProjection(proj, select, proj.Projector, proj.Aggregator);
             }
 
@@ -592,7 +592,7 @@ namespace IQToolkit.Data.Common
                 if (column.Alias == this.outerAlias)
                 {
                     NamedValueExpression nv;
-                    if (!this.map.TryGetValue(column, out nv))
+                    if (!this.map.TryGetValue(column, out nv)) 
                     {
                         nv = new NamedValueExpression("n" + (iParam++), column.QueryType, column);
                         this.map.Add(column, nv);

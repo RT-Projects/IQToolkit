@@ -165,7 +165,7 @@ namespace IQToolkit.Data.Common
         /// <param name="member"></param>
         /// <returns></returns>
         public virtual IEnumerable<MemberInfo> GetAssociationKeyMembers(MappingEntity entity, MemberInfo member)
-        {
+        {            
             return new MemberInfo[] { };
         }
 
@@ -413,7 +413,7 @@ namespace IQToolkit.Data.Common
                 pc.Projector
                 );
 
-            return (ProjectionExpression) this.Translator.Police.ApplyPolicy(proj, entity.ElementType);
+            return (ProjectionExpression)this.Translator.Police.ApplyPolicy(proj, entity.ElementType);
         }
 
         public override EntityExpression GetEntityExpression(Expression root, MappingEntity entity)
@@ -487,7 +487,7 @@ namespace IQToolkit.Data.Common
                 {
                     assignments = this.MapAssignments(assignments, entity.EntityType).ToList();
                 }
-                result = Expression.MemberInit(newExpression, (MemberBinding[]) assignments.Select(a => Expression.Bind(a.Member, a.Expression)).ToArray());
+                result = Expression.MemberInit(newExpression, (MemberBinding[])assignments.Select(a => Expression.Bind(a.Member, a.Expression)).ToArray());
             }
             else
             {
@@ -506,7 +506,7 @@ namespace IQToolkit.Data.Common
         {
             foreach (var assign in assignments)
             {
-                MemberInfo[] members = entityType.GetMember(assign.Member.Name, BindingFlags.Instance | BindingFlags.Public);
+                MemberInfo[] members = entityType.GetMember(assign.Member.Name, BindingFlags.Instance|BindingFlags.Public);
                 if (members != null && members.Length > 0)
                 {
                     yield return new EntityAssignment(members[0], assign.Expression);
@@ -658,7 +658,7 @@ namespace IQToolkit.Data.Common
                 Expression where = null;
                 for (int i = 0, n = associatedMembers.Count; i < n; i++)
                 {
-                    Expression equal =
+                    Expression equal = 
                         this.GetMemberExpression(projection.Projector, relatedEntity, associatedMembers[i]).Equal(
                             this.GetMemberExpression(root, entity, declaredTypeMembers[i])
                         );
@@ -718,7 +718,7 @@ namespace IQToolkit.Data.Common
                 if (this.mapping.IsColumn(entity, m) && fnIncludeColumn(entity, m))
                 {
                     yield return new ColumnAssignment(
-                        (ColumnExpression) this.GetMemberExpression(table, entity, m),
+                        (ColumnExpression)this.GetMemberExpression(table, entity, m),
                         Expression.MakeMemberAccess(instance, m)
                         );
                 }
@@ -956,7 +956,7 @@ namespace IQToolkit.Data.Common
                 var check = this.GetEntityExistsTest(entity, instance);
                 return new IFCommand(check, update, insert);
             }
-            else
+            else 
             {
                 Expression insert = this.GetInsertExpression(entity, instance, resultSelector);
                 Expression update = this.GetUpdateExpression(entity, instance, updateCheck, resultSelector, insert);
