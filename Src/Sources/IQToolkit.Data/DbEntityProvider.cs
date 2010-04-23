@@ -423,9 +423,11 @@ namespace IQToolkit.Data
                 this.StartUsingConnection();
                 try
                 {
-                    DbCommand cmd = this.GetCommand(query, paramValues);
-                    this.rowsAffected = cmd.ExecuteNonQuery();
-                    return this.rowsAffected;
+                    using (DbCommand cmd = this.GetCommand(query, paramValues))
+                    {
+                        this.rowsAffected = cmd.ExecuteNonQuery();
+                        return this.rowsAffected;
+                    }
                 }
                 finally
                 {
