@@ -563,6 +563,17 @@ namespace IQToolkit.Data.SQLite
             return base.VisitValue(expr);
         }
 
+        protected override Expression VisitColumn(ColumnExpression column)
+        {
+            if (column.Type == typeof(DateTime) || column.Type == typeof(Nullable<DateTime>))
+            {
+                var c = base.VisitColumn(column);
+                return c;
+            }
+            else
+                return base.VisitColumn(column);
+        }
+
         protected override Expression VisitConditional(ConditionalExpression c)
         {
             if (this.IsPredicate(c.Test))

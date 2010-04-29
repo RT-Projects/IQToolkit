@@ -131,6 +131,8 @@ namespace IQToolkit.Data.Common
 
         private bool GetEquiJoinKeyExpressions(Expression predicate, TableAlias outerAlias, List<Expression> outerExpressions, List<Expression> innerExpressions)
         {
+            if (predicate == null)
+                return false;
             if (predicate.NodeType == ExpressionType.Equal)
             {
                 var b = (BinaryExpression)predicate;

@@ -77,6 +77,21 @@ namespace IQToolkit.Data.Common
  	        return base.VisitSubquery(subquery);
         }
 
+        protected override Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            var table = (TableExpression) this.Visit(insert.Table);
+            Expression query;
+            if (insert.Query is SelectExpression)
+            {
+                var sel = (SelectExpression) insert.Query;
+                var where = this.Visit(sel.Where);
+                query = UpdateSelect(sel, sel.From, where, sel.OrderBy, sel.GroupBy, sel.Skip, sel.Take, sel.IsDistinct, sel.IsReverse, sel.Columns);
+            }
+            else
+                query = this.Visit(insert.Query);
+            return this.UpdateInsertQuery(insert, table, query, insert.ColumnNames);
+        }
+
         protected override Expression VisitSelect(SelectExpression select)
         {
             // visit column projection first

@@ -56,6 +56,7 @@ namespace IQToolkit.Data.Common
                 case DbExpressionType.ClientJoin:
                     return this.VisitClientJoin((ClientJoinExpression)exp);
                 case DbExpressionType.Insert:
+                case DbExpressionType.InsertQuery:
                 case DbExpressionType.Update:
                 case DbExpressionType.Delete:
                 case DbExpressionType.If:
@@ -364,6 +365,8 @@ namespace IQToolkit.Data.Common
             {
                 case DbExpressionType.Insert:
                     return this.VisitInsert((InsertCommand)command);
+                case DbExpressionType.InsertQuery:
+                    return this.VisitInsertQuery((InsertQueryCommand) command);
                 case DbExpressionType.Update:
                     return this.VisitUpdate((UpdateCommand)command);
                 case DbExpressionType.Delete:
@@ -386,11 +389,27 @@ namespace IQToolkit.Data.Common
             return this.UpdateInsert(insert, table, assignments);
         }
 
+        protected virtual Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            var table = (TableExpression) this.Visit(insert.Table);
+            var query = this.Visit(insert.Query);
+            return this.UpdateInsertQuery(insert, table, query, insert.ColumnNames);
+        }
+
         protected InsertCommand UpdateInsert(InsertCommand insert, TableExpression table, IEnumerable<ColumnAssignment> assignments)
         {
             if (table != insert.Table || assignments != insert.Assignments)
             {
                 return new InsertCommand(table, assignments);
+            }
+            return insert;
+        }
+
+        protected InsertQueryCommand UpdateInsertQuery(InsertQueryCommand insert, TableExpression table, Expression query, IEnumerable<string> columnNames)
+        {
+            if (table != insert.Table || query != insert.Query || columnNames != insert.ColumnNames)
+            {
+                return new InsertQueryCommand(table, query, columnNames);
             }
             return insert;
         }

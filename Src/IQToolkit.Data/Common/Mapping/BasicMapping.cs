@@ -64,7 +64,7 @@ namespace IQToolkit.Data.Common
         }
 
         /// <summary>
-        /// Deterimines is a property is mapped onto a column or relationship
+        /// Determines if a property is mapped onto a column or relationship
         /// </summary>
         /// <param name="member"></param>
         /// <returns></returns>
@@ -704,6 +704,13 @@ namespace IQToolkit.Data.Common
             return new InsertCommand(table, assignments);
         }
 
+        public override Expression GetInsertQueryExpression(MappingEntity entity, Expression query)
+        {
+            var tableAlias = new TableAlias();
+            var table = new TableExpression(tableAlias, entity, this.mapping.GetTableName(entity));
+            return new InsertQueryCommand(table, query);
+        }
+
         private IEnumerable<ColumnAssignment> GetColumnAssignments(Expression table, Expression instance, MappingEntity entity, Func<MappingEntity, MemberInfo, bool> fnIncludeColumn)
         {
             foreach (var m in this.mapping.GetMappedMembers(entity))
@@ -716,6 +723,32 @@ namespace IQToolkit.Data.Common
                         );
                 }
             }
+        }
+
+        private IEnumerable<ColumnAssignment> GetColumnAssignments(Expression table, MappingEntity entity, IList<Expression> assignments)
+        {
+            var list = new List<ColumnAssignment>();
+            var mapped = this.mapping.GetMappedMembers(entity).Where(m => this.mapping.IsColumn(entity, m)).ToArray();
+            foreach (var a in assignments)
+            {
+                var body = a;
+                while (body.NodeType == ExpressionType.Quote)
+                    body = ((UnaryExpression) body).Operand;
+                if (body.NodeType != ExpressionType.Equal)
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+                var left = ((BinaryExpression) body).Left;
+                if (!(left is MemberExpression))
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+                var member = mapped.FirstOrDefault(mem => mem.Equals(((MemberExpression) left).Member));
+                if (member == null)
+                    throw new ArgumentException("'assignments' parameter must be an array of lambda expressions involving an entity column followed by the == operator", "assignments");
+
+                list.Add(new ColumnAssignment(
+                    (ColumnExpression) this.GetMemberExpression(table, entity, member),
+                    ((BinaryExpression) body).Right
+                ));
+            }
+            return list;
         }
 
         protected virtual Expression GetInsertResult(MappingEntity entity, Expression instance, LambdaExpression selector, Dictionary<MemberInfo, Expression> map)
@@ -876,6 +909,28 @@ namespace IQToolkit.Data.Common
             {
                 return update;
             }
+        }
+
+        public override Expression GetUpdateQueryExpression(MappingEntity entity, LambdaExpression updateCheck, LambdaExpression assignments)
+        {
+            var tableAlias = new TableAlias();
+            var table = new TableExpression(tableAlias, entity, this.mapping.GetTableName(entity));
+
+            Expression typeProjector = this.GetEntityExpression(table, entity);
+            Expression where;
+            if (updateCheck != null)
+                where = DbExpressionReplacer.Replace(updateCheck.Body, updateCheck.Parameters[0], typeProjector);
+            else
+                where = Expression.Constant(true);
+
+            var body = assignments.Body;
+            while (body.NodeType == ExpressionType.Quote)
+                body = ((UnaryExpression) body).Operand;
+            body = DbExpressionReplacer.Replace(body, assignments.Parameters[0], typeProjector);
+            if (!(body is NewArrayExpression))
+                throw new ArgumentException("Body of 'assignments' lambda is expected to be a new-array expression.", "assignments");
+            var assignmentsQ = this.GetColumnAssignments(table, entity, ((NewArrayExpression) body).Expressions);
+            return new UpdateCommand(table, where, assignmentsQ);
         }
 
         protected virtual Expression GetUpdateResult(MappingEntity entity, Expression instance, LambdaExpression selector)

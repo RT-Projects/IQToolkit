@@ -262,6 +262,7 @@ namespace IQToolkit.Data.Common
                 case (ExpressionType)DbExpressionType.Projection:
                 case (ExpressionType)DbExpressionType.NamedValue:
                 case (ExpressionType)DbExpressionType.Insert:
+                case (ExpressionType)DbExpressionType.InsertQuery:
                 case (ExpressionType)DbExpressionType.Update:
                 case (ExpressionType)DbExpressionType.Delete:
                 case (ExpressionType)DbExpressionType.Block:
@@ -394,7 +395,11 @@ namespace IQToolkit.Data.Common
             }
             else
             {
-                throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+                throw new NotSupportedException(string.Format("The method '{0} {1}.{2}({3})' is not supported",
+                    m.Method.ReturnType.Name,
+                    m.Method.DeclaringType.Name,
+                    m.Method.Name,
+                    string.Join(", ", m.Method.GetParameters().Select(p => p.ParameterType.Name).ToArray())));
             }
         }
 
@@ -736,21 +741,7 @@ namespace IQToolkit.Data.Common
 
         protected override Expression VisitConditional(ConditionalExpression c)
         {
-            if (this.forDebug)
-            {
-                this.Write("?iff?(");
-                this.Visit(c.Test);
-                this.Write(", ");
-                this.Visit(c.IfTrue);
-                this.Write(", ");
-                this.Visit(c.IfFalse);
-                this.Write(")");
-                return c;
-            }
-            else
-            {
-                throw new NotSupportedException(string.Format("Conditional expressions not supported"));
-            }
+            throw new NotSupportedException(string.Format("Conditional expressions not supported"));
         }
 
         protected override Expression VisitConstant(ConstantExpression c)
@@ -786,7 +777,7 @@ namespace IQToolkit.Data.Common
                     case TypeCode.Single:
                     case TypeCode.Double:
                         string str = value.ToString();
-                        if (!str.Contains('.'))
+                        if (!str.Contains('.') && !str.Contains('e') && !str.Contains('E'))
                         {
                             str += ".0";
                         }
@@ -1131,7 +1122,7 @@ namespace IQToolkit.Data.Common
         {
             this.Write("INSERT INTO ");
             this.WriteTableName(insert.Table.Name);
-            this.Write("(");
+            this.Write(" (");
             for (int i = 0, n = insert.Assignments.Count; i < n; i++)
             {
                 ColumnAssignment ca = insert.Assignments[i];
@@ -1148,6 +1139,24 @@ namespace IQToolkit.Data.Common
                 this.Visit(ca.Expression);
             }
             this.Write(")");
+            return insert;
+        }
+
+        protected override Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            this.Write("INSERT INTO ");
+            this.WriteTableName(insert.Table.Name);
+            this.Write(" (");
+
+            for (int i = 0; i < insert.ColumnNames.Count; i++)
+            {
+                if (i > 0) this.Write(", ");
+                this.WriteColumnName(insert.ColumnNames[i]);
+            }
+
+            this.Write(")");
+            this.WriteLine(Indentation.Same);
+            Visit(insert.Query);
             return insert;
         }
 

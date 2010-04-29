@@ -67,6 +67,7 @@ namespace IQToolkit.Data.Common
                 case DbExpressionType.Column:
                     return this.VisitColumn((ColumnExpression)exp);
                 case DbExpressionType.Insert:
+                case DbExpressionType.InsertQuery:
                 case DbExpressionType.Update:
                 case DbExpressionType.Delete:
                 case DbExpressionType.If:

@@ -36,6 +36,7 @@ namespace IQToolkit.Data.Common
         NamedValue,
         OuterJoined,
         Insert,
+        InsertQuery,
         Update,
         Delete,
         Batch,
@@ -803,6 +804,43 @@ namespace IQToolkit.Data.Common
         public ReadOnlyCollection<ColumnAssignment> Assignments
         {
             get { return this.assignments; }
+        }
+    }
+
+    public class InsertQueryCommand : CommandExpression
+    {
+        TableExpression table;
+        Expression query;
+        ReadOnlyCollection<string> columnNames;
+
+        public InsertQueryCommand(TableExpression table, Expression query)
+            : base(DbExpressionType.InsertQuery, typeof(int))
+        {
+            this.table = table;
+            this.query = query;
+        }
+
+        public InsertQueryCommand(TableExpression table, Expression query, IEnumerable<string> columnNames)
+            : base(DbExpressionType.InsertQuery, typeof(int))
+        {
+            this.table = table;
+            this.query = query;
+            this.columnNames = columnNames.ToReadOnly();
+        }
+
+        public TableExpression Table
+        {
+            get { return this.table; }
+        }
+
+        public Expression Query
+        {
+            get { return this.query; }
+        }
+
+        public ReadOnlyCollection<string> ColumnNames
+        {
+            get { return this.columnNames; }
         }
     }
 

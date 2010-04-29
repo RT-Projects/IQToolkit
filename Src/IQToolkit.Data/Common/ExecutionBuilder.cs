@@ -353,6 +353,7 @@ namespace IQToolkit.Data.Common
             switch ((DbExpressionType)command.NodeType)
             {
                 case DbExpressionType.Insert:
+                case DbExpressionType.InsertQuery:
                 case DbExpressionType.Delete:
                 case DbExpressionType.Update:
                     return false;
@@ -362,6 +363,11 @@ namespace IQToolkit.Data.Common
         }
 
         protected override Expression VisitInsert(InsertCommand insert)
+        {
+            return this.BuildExecuteCommand(insert);
+        }
+
+        protected override Expression VisitInsertQuery(InsertQueryCommand insert)
         {
             return this.BuildExecuteCommand(insert);
         }
@@ -475,10 +481,11 @@ namespace IQToolkit.Data.Common
             QueryCommand qc = new QueryCommand(commandText, namedValues.Select(v => new QueryParameter(v.Name, v.Type, v.QueryType)));
             Expression[] values = namedValues.Select(v => Expression.Convert(this.Visit(v.Value), typeof(object))).ToArray();
 
-            ProjectionExpression projection = ProjectionFinder.FindProjection(expression);
-            if (projection != null)
+            if (expression is BlockCommand)
             {
-                return this.ExecuteProjection(projection, false, qc, values);
+                ProjectionExpression projection = ProjectionFinder.FindProjection(expression);
+                if (projection != null)
+                    return this.ExecuteProjection(projection, false, qc, values);
             }
 
             Expression plan = Expression.Call(this.executor, "ExecuteCommand", null,

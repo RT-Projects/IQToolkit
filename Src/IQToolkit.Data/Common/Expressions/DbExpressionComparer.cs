@@ -88,6 +88,8 @@ namespace IQToolkit.Data.Common
                     return this.CompareNamedValue((NamedValueExpression)a, (NamedValueExpression)b);
                 case DbExpressionType.Insert:
                     return this.CompareInsert((InsertCommand)a, (InsertCommand)b);
+                case DbExpressionType.InsertQuery:
+                    return this.CompareInsertQuery((InsertQueryCommand) a, (InsertQueryCommand) b);
                 case DbExpressionType.Update:
                     return this.CompareUpdate((UpdateCommand)a, (UpdateCommand)b);
                 case DbExpressionType.Delete:
@@ -322,6 +324,11 @@ namespace IQToolkit.Data.Common
         {
             return this.Compare(x.Table, y.Table)
                 && this.CompareColumnAssignments(x.Assignments, y.Assignments);
+        }
+
+        protected virtual bool CompareInsertQuery(InsertQueryCommand x, InsertQueryCommand y)
+        {
+            return this.Compare(x.Table, y.Table) && this.Compare(x.Query, y.Query);
         }
 
         protected virtual bool CompareColumnAssignments(ReadOnlyCollection<ColumnAssignment> x, ReadOnlyCollection<ColumnAssignment> y)

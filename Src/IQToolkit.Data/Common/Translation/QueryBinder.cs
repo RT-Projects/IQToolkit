@@ -4,11 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace IQToolkit.Data.Common
 {
@@ -203,12 +201,23 @@ namespace IQToolkit.Data.Common
                 switch (m.Method.Name)
                 {
                     case "Insert":
+                        if (m.Arguments.Count == 2 && typeof(IQueryable).IsAssignableFrom(m.Arguments[1].Type))
+                            return this.BindInsertQuery(upd, m.Arguments[1]);
+
                         return this.BindInsert(
                             upd,
                             m.Arguments[1], 
                             m.Arguments.Count > 2 ? GetLambda(m.Arguments[2]) : null
                             );
                     case "Update":
+                        if (m.Arguments.Count == 3 && GetLambda(m.Arguments[1]) != null)
+                        {
+                            return this.BindUpdateQuery(
+                                upd,
+                                GetLambda(m.Arguments[1]),
+                                GetLambda(m.Arguments[2])
+                                );
+                        }
                         return this.BindUpdate(
                             upd,
                             m.Arguments[1], 
@@ -331,6 +340,37 @@ namespace IQToolkit.Data.Common
             }
 
             return result;
+        }
+
+        protected override Expression VisitInsertQuery(InsertQueryCommand insert)
+        {
+            insert = (InsertQueryCommand) base.VisitInsertQuery(insert);
+
+            var project = insert.Query as ProjectionExpression;
+            if (project == null)
+                throw new ArgumentException("insert.Query was expected to be a ProjectionExpression");
+
+            if (project.Projector is ConstantExpression)
+                return this.Visit(this.mapper.GetInsertExpression(insert.Table.Entity, project.Projector, null));
+
+            if (project.Projector is MemberInitExpression)
+            {
+                var memberInit = (MemberInitExpression) project.Projector;
+                if (memberInit.Type.Equals(insert.Table.Entity.ElementType))
+                {
+                    var columnDeclarations = new List<ColumnDeclaration>();
+                    var columnNames = new List<string>();
+                    foreach (var binding in memberInit.Bindings.OfType<MemberAssignment>())
+                    {
+                        var type = (binding.Member is FieldInfo) ? ((FieldInfo) binding.Member).FieldType : ((PropertyInfo) binding.Member).PropertyType;
+                        columnDeclarations.Add(new ColumnDeclaration(binding.Member.Name, binding.Expression, this.language.TypeSystem.GetColumnType(type)));
+                        columnNames.Add(binding.Member.Name);
+                    }
+                    return UpdateInsertQuery(insert, insert.Table, new SelectExpression(new TableAlias(), columnDeclarations, project.Select, null), columnNames);
+                }
+            }
+
+            throw new ArgumentException("The result of the Insert query must be a collection of the type " + insert.Table.Entity.ElementType.FullName);
         }
 
         private Expression BindWhere(Type resultType, Expression source, LambdaExpression predicate)
@@ -949,10 +989,21 @@ namespace IQToolkit.Data.Common
             return this.Visit(this.mapper.GetInsertExpression(entity, instance, selector));
         }
 
+        private Expression BindInsertQuery(IEntityTable upd, Expression query)
+        {
+            MappingEntity entity = this.mapper.Mapping.GetEntity(upd.ElementType, upd.TableId);
+            return this.Visit(this.mapper.GetInsertQueryExpression(entity, query));
+        }
         private Expression BindUpdate(IEntityTable upd, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
         {
             MappingEntity entity = this.mapper.Mapping.GetEntity(instance.Type, upd.TableId);
             return this.Visit(this.mapper.GetUpdateExpression(entity, instance, updateCheck, resultSelector, null));
+        }
+
+        private Expression BindUpdateQuery(IEntityTable upd, LambdaExpression updateCheck, LambdaExpression assignments)
+        {
+            MappingEntity entity = this.mapper.Mapping.GetEntity(upd.ElementType, upd.TableId);
+            return this.Visit(this.mapper.GetUpdateQueryExpression(entity, updateCheck, assignments));
         }
 
         private Expression BindInsertOrUpdate(IEntityTable upd, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)

@@ -192,7 +192,7 @@ namespace IQToolkit.Data
             get { return this.actionOpenedConnection; }
         }
 
-        protected void StartUsingConnection()
+        public void StartUsingConnection()
         {
             if (this.connection.State == ConnectionState.Closed)
             {
@@ -202,7 +202,7 @@ namespace IQToolkit.Data
             this.nConnectedActions++;
         }
 
-        protected void StopUsingConnection()
+        public void StopUsingConnection()
         {
             System.Diagnostics.Debug.Assert(this.nConnectedActions > 0);
             this.nConnectedActions--;
@@ -358,18 +358,20 @@ namespace IQToolkit.Data
                 this.StartUsingConnection();
                 try
                 {
-                    DbCommand cmd = this.GetCommand(command, paramValues);
-                    DbDataReader reader = this.ExecuteReader(cmd);
-                    var result = Project(reader, fnProjector, entity, true);
-                    if (this.provider.ActionOpenedConnection)
+                    using (DbCommand cmd = this.GetCommand(command, paramValues))
+                    using (DbDataReader reader = this.ExecuteReader(cmd))
                     {
-                        result = result.ToList();
+                        var result = Project(reader, fnProjector, entity, true);
+                        if (this.provider.ActionOpenedConnection)
+                        {
+                            result = result.ToList();
+                        }
+                        else
+                        {
+                            result = new EnumerateOnce<T>(result);
+                        }
+                        return result;
                     }
-                    else
-                    {
-                        result = new EnumerateOnce<T>(result);
-                    }
-                    return result;
                 }
                 finally
                 {
@@ -385,11 +387,13 @@ namespace IQToolkit.Data
                     // use data table to buffer results
                     var ds = new DataSet();
                     ds.EnforceConstraints = false;
-                    var table = new DataTable();
-                    ds.Tables.Add(table);
-                    ds.EnforceConstraints = false;
-                    table.Load(reader);
-                    reader = table.CreateDataReader();
+                    using (var table = new DataTable())
+                    {
+                        ds.Tables.Add(table);
+                        ds.EnforceConstraints = false;
+                        table.Load(reader);
+                        return table.CreateDataReader();
+                    }
                 }
                 return reader;
             }
@@ -419,9 +423,11 @@ namespace IQToolkit.Data
                 this.StartUsingConnection();
                 try
                 {
-                    DbCommand cmd = this.GetCommand(query, paramValues);
-                    this.rowsAffected = cmd.ExecuteNonQuery();
-                    return this.rowsAffected;
+                    using (DbCommand cmd = this.GetCommand(query, paramValues))
+                    {
+                        this.rowsAffected = cmd.ExecuteNonQuery();
+                        return this.rowsAffected;
+                    }
                 }
                 finally
                 {
