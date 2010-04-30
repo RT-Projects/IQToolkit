@@ -85,10 +85,12 @@ namespace IQToolkit.Data
 
         public static DbEntityProvider FromApplicationSettings()
         {
+#pragma warning disable 618
             var provider = System.Configuration.ConfigurationSettings.AppSettings["Provider"];
             var connection = System.Configuration.ConfigurationSettings.AppSettings["Connection"];
             var mapping = System.Configuration.ConfigurationSettings.AppSettings["Mapping"];
             return From(provider, connection, mapping);
+#pragma warning restore 618
         }
 
         public static DbEntityProvider From(string connectionString, string mappingId)

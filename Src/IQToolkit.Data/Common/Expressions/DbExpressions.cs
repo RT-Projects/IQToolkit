@@ -10,6 +10,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
+#pragma warning disable 618
+
 namespace IQToolkit.Data.Common
 {
     /// <summary>
