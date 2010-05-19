@@ -122,8 +122,5 @@
   -->
   <PropertyGroup>
     <PreBuildEvent>$(ProjectDir)CopyProviders.cmd $(OutDir) $(ProjectDir)</PreBuildEvent>
-    <OutputPath>..\..\Builds\$(Configuration)</OutputPath>
-    <IntermediateOutputPath>..\..\Builds\$(Configuration)\obj-$(AssemblyName)</IntermediateOutputPath>
-    <BaseIntermediateOutputPath>..\..\Builds\$(Configuration)\obj-$(AssemblyName)</BaseIntermediateOutputPath>
   </PropertyGroup>
 </Project>
