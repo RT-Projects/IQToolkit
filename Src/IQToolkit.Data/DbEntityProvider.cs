@@ -461,15 +461,15 @@ namespace IQToolkit.Data
             private IEnumerable<int> ExecuteBatch(QueryCommand query, IEnumerable<object[]> paramSets)
             {
                 this.LogCommand(query, null);
-                DbCommand cmd = this.GetCommand(query, null);
-                foreach (var paramValues in paramSets)
-                {
-                    this.LogParameters(query, paramValues);
-                    this.LogMessage("");
-                    this.SetParameterValues(query, cmd, paramValues);
-                    this.rowsAffected = cmd.ExecuteNonQuery();
-                    yield return this.rowsAffected;
-                }
+                using (var cmd = this.GetCommand(query, null))
+                    foreach (var paramValues in paramSets)
+                    {
+                        this.LogParameters(query, paramValues);
+                        this.LogMessage("");
+                        this.SetParameterValues(query, cmd, paramValues);
+                        this.rowsAffected = cmd.ExecuteNonQuery();
+                        yield return this.rowsAffected;
+                    }
             }
 
             public override IEnumerable<T> ExecuteBatch<T>(QueryCommand query, IEnumerable<object[]> paramSets, Func<FieldReader, T> fnProjector, MappingEntity entity, int batchSize, bool stream)
