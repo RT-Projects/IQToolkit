@@ -95,8 +95,8 @@ namespace IQToolkit
 
             internal IQueryProvider FindProvider(Expression expression, object[] args)
             {
-                Expression root = this.FindProviderInExpression(expression) as ConstantExpression;
-                if (root == null && args != null && args.Length > 0)
+                Expression root = this.FindProviderInExpression(expression);
+                if (!(root is ConstantExpression) && args != null && args.Length > 0)
                 {
                     Expression replaced = ExpressionReplacer.ReplaceAll(
                         expression,
