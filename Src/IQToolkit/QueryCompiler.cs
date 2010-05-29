@@ -355,7 +355,7 @@ namespace IQToolkit
         }
     }
 
-    /// <summary>Encapsulates a compiled query taking no arguments and returning a result.</summary>
+    /// <summary>Encapsulates a compiled query taking one argument and returning a result.</summary>
     /// <typeparam name="T">Type of the argument taken by the query.</typeparam>
     /// <typeparam name="TResult">Type of the query result.</typeparam>
     public sealed class CompiledQuery<T, TResult> : CompiledQuery
