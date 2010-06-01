@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -20,7 +21,6 @@ namespace IQToolkit.Data.Common
         Dictionary<ParameterExpression, Expression> map;
         Dictionary<Expression, GroupByInfo> groupByMap;
         Expression root;
-        IEntityTable batchUpd;
 
         private QueryBinder(QueryMapper mapper, Expression root)
         {
@@ -194,9 +194,10 @@ namespace IQToolkit.Data.Common
             }
             else if (typeof(Updatable).IsAssignableFrom(m.Method.DeclaringType)) 
             {
-                IEntityTable upd = this.batchUpd != null
-                    ? this.batchUpd
-                    : (IEntityTable)((ConstantExpression)m.Arguments[0]).Value;
+                Type[] typearr;
+                if (!TryGetInterfaceGenericParameters(m.Arguments[0].Type, typeof(IQueryable<>), out typearr))
+                    throw new InvalidOperationException(string.Format(@"Type of expression ""{0}"" must implement IQueryable<T> for some entity type T.", m.Arguments[0].ToString()));
+                var upd = this.mapper.Mapping.GetEntity(typearr[0]);
 
                 switch (m.Method.Name)
                 {
@@ -262,6 +263,24 @@ namespace IQToolkit.Data.Common
                     );
             }
             return base.VisitMethodCall(m);
+        }
+
+        private static bool TryGetInterfaceGenericParameters(Type type, Type @interface, out Type[] typeParameters)
+        {
+            typeParameters = null;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == @interface)
+            {
+                typeParameters = type.GetGenericArguments();
+                return true;
+            }
+
+            var implements = type.FindInterfaces((ty, obj) => ty.IsGenericType && ty.GetGenericTypeDefinition() == @interface, null).FirstOrDefault();
+            if (implements == null)
+                return false;
+
+            typeParameters = implements.GetGenericArguments();
+            return true;
         }
 
         protected override Expression VisitUnary(UnaryExpression u)
@@ -983,47 +1002,42 @@ namespace IQToolkit.Data.Common
             return new ProjectionExpression(select, new ColumnExpression(expr.Type, colType, alias, "value"), gator);
         }
 
-        private Expression BindInsert(IEntityTable upd, Expression instance, LambdaExpression selector)
+        private Expression BindInsert(MappingEntity entity, Expression instance, LambdaExpression selector)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(instance.Type, upd.TableId);
+            Debug.Assert(entity.ElementType == instance.Type);
             return this.Visit(this.mapper.GetInsertExpression(entity, instance, selector));
         }
 
-        private Expression BindInsertQuery(IEntityTable upd, Expression query)
+        private Expression BindInsertQuery(MappingEntity entity, Expression query)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(upd.ElementType, upd.TableId);
             return this.Visit(this.mapper.GetInsertQueryExpression(entity, query));
         }
-        private Expression BindUpdate(IEntityTable upd, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
+        private Expression BindUpdate(MappingEntity entity, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(instance.Type, upd.TableId);
+            Debug.Assert(entity.ElementType == instance.Type);
             return this.Visit(this.mapper.GetUpdateExpression(entity, instance, updateCheck, resultSelector, null));
         }
 
-        private Expression BindUpdateQuery(IEntityTable upd, LambdaExpression updateCheck, LambdaExpression assignments)
+        private Expression BindUpdateQuery(MappingEntity entity, LambdaExpression updateCheck, LambdaExpression assignments)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(upd.ElementType, upd.TableId);
             return this.Visit(this.mapper.GetUpdateQueryExpression(entity, updateCheck, assignments));
         }
 
-        private Expression BindInsertOrUpdate(IEntityTable upd, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
+        private Expression BindInsertOrUpdate(MappingEntity entity, Expression instance, LambdaExpression updateCheck, LambdaExpression resultSelector)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(instance.Type, upd.TableId);
+            Debug.Assert(entity.ElementType == instance.Type);
             return this.Visit(this.mapper.GetInsertOrUpdateExpression(entity, instance, updateCheck, resultSelector));
         }
 
-        private Expression BindDelete(IEntityTable upd, Expression instance, LambdaExpression deleteCheck)
+        private Expression BindDelete(MappingEntity entity, Expression instance, LambdaExpression deleteCheck)
         {
-            MappingEntity entity = this.mapper.Mapping.GetEntity(instance != null ? instance.Type : deleteCheck.Parameters[0].Type, upd.TableId);
+            Debug.Assert(entity.ElementType == (instance != null ? instance.Type : deleteCheck.Parameters[0].Type));
             return this.Visit(this.mapper.GetDeleteExpression(entity, instance, deleteCheck));
         }
 
-        private Expression BindBatch(IEntityTable upd, Expression instances, LambdaExpression operation, Expression batchSize, Expression stream)
+        private Expression BindBatch(MappingEntity entity, Expression instances, LambdaExpression operation, Expression batchSize, Expression stream)
         {
-            var save = this.batchUpd;
-            this.batchUpd = upd;
-            var op = (LambdaExpression)this.Visit(operation);
-            this.batchUpd = save;
+            var op = (LambdaExpression) this.Visit(operation);
             var items = this.Visit(instances);
             var size = this.Visit(batchSize);
             var str = this.Visit(stream);
