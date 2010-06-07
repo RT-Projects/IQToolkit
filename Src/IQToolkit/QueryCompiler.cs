@@ -254,6 +254,8 @@ namespace IQToolkit
     {
         public static CompiledQuery<TResult> Create<TResult>(Expression<Func<TResult>> query) { return new CompiledQuery<TResult>(query); }
         public static CompiledQuery<T, TResult> Create<T, TResult>(Expression<Func<T, TResult>> query) { return new CompiledQuery<T, TResult>(query); }
+        public static CompiledQuery<T1, T2, TResult> Create<T1, T2, TResult>(Expression<Func<T1, T2, TResult>> query) { return new CompiledQuery<T1, T2, TResult>(query); }
+        public static CompiledQuery<T1, T2, T3, TResult> Create<T1, T2, T3, TResult>(Expression<Func<T1, T2, T3, TResult>> query) { return new CompiledQuery<T1, T2, T3, TResult>(query); }
 
         /// <summary>Compiles the <see cref="_Query"/> and places the result into <see cref="_Compiled"/>, unless there already is a result in <see cref="_Compiled"/>.</summary>
         /// <param name="args">If not null, the arguments will be searched for a query provider in case the expression doesn't have one as a ConstantExpression.</param>
@@ -395,4 +397,86 @@ namespace IQToolkit
         }
     }
 
+    /// <summary>Encapsulates a compiled query taking two arguments and returning a result.</summary>
+    /// <typeparam name="T1">Type of the first argument taken by the query.</typeparam>
+    /// <typeparam name="T2">Type of the second argument taken by the query.</typeparam>
+    /// <typeparam name="TResult">Type of the query result.</typeparam>
+    public sealed class CompiledQuery<T1, T2, TResult> : CompiledQuery
+    {
+        private Expression<Func<T1, T2, TResult>> _query;
+        private Func<T1, T2, TResult> _compiled;
+
+        /// <summary>Constructor.</summary>
+        /// <param name="query">The query to be compiled, as an expression.</param>
+        public CompiledQuery(Expression<Func<T1, T2, TResult>> query)
+        {
+            if (query == null) throw new ArgumentNullException();
+            _query = query;
+        }
+
+        private void compile(IQueryProvider provider, object[] args)
+        {
+            var compiled = CompiledQuery.Compile(_query, provider, args);
+            System.Threading.Interlocked.CompareExchange(ref _compiled, (Func<T1, T2, TResult>) compiled, null);
+        }
+
+        /// <summary>Compiles the query (unless it's already been compiled earlier). Returns a delegate that represents the compiled query.</summary>
+        /// <param name="provider">In cases where the query expression itself doesn't reference a queryable *instance*, a query provider must be supplied during compilation.</param>
+        public Func<T1, T2, TResult> Compile(IQueryProvider provider = null)
+        {
+            if (_compiled == null)
+                compile(provider, null);
+            return _compiled;
+        }
+
+        /// <summary>Executes the compiled query. The query will be compiled at this point if this hasn't been done yet.</summary>
+        public TResult Invoke(T1 arg1, T2 arg2)
+        {
+            if (_compiled == null)
+                compile(null, null);
+            return _compiled(arg1, arg2);
+        }
+    }
+
+    /// <summary>Encapsulates a compiled query taking three arguments and returning a result.</summary>
+    /// <typeparam name="T1">Type of the first argument taken by the query.</typeparam>
+    /// <typeparam name="T2">Type of the second argument taken by the query.</typeparam>
+    /// <typeparam name="T3">Type of the third argument taken by the query.</typeparam>
+    /// <typeparam name="TResult">Type of the query result.</typeparam>
+    public sealed class CompiledQuery<T1, T2, T3, TResult> : CompiledQuery
+    {
+        private Expression<Func<T1, T2, T3, TResult>> _query;
+        private Func<T1, T2, T3, TResult> _compiled;
+
+        /// <summary>Constructor.</summary>
+        /// <param name="query">The query to be compiled, as an expression.</param>
+        public CompiledQuery(Expression<Func<T1, T2, T3, TResult>> query)
+        {
+            if (query == null) throw new ArgumentNullException();
+            _query = query;
+        }
+
+        private void compile(IQueryProvider provider, object[] args)
+        {
+            var compiled = CompiledQuery.Compile(_query, provider, args);
+            System.Threading.Interlocked.CompareExchange(ref _compiled, (Func<T1, T2, T3, TResult>) compiled, null);
+        }
+
+        /// <summary>Compiles the query (unless it's already been compiled earlier). Returns a delegate that represents the compiled query.</summary>
+        /// <param name="provider">In cases where the query expression itself doesn't reference a queryable *instance*, a query provider must be supplied during compilation.</param>
+        public Func<T1, T2, T3, TResult> Compile(IQueryProvider provider = null)
+        {
+            if (_compiled == null)
+                compile(provider, null);
+            return _compiled;
+        }
+
+        /// <summary>Executes the compiled query. The query will be compiled at this point if this hasn't been done yet.</summary>
+        public TResult Invoke(T1 arg1, T2 arg2, T3 arg3)
+        {
+            if (_compiled == null)
+                compile(null, null);
+            return _compiled(arg1, arg2, arg3);
+        }
+    }
 }
