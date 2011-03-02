@@ -460,10 +460,15 @@ namespace IQToolkit.Data
 
             private IEnumerable<int> ExecuteBatch(QueryCommand query, IEnumerable<object[]> paramSets)
             {
-                this.LogCommand(query, null);
+                var printed = false;
                 using (var cmd = this.GetCommand(query, null))
                     foreach (var paramValues in paramSets)
                     {
+                        if (!printed)
+                        {
+                            this.LogCommand(query, null);
+                            printed = true;
+                        }
                         this.LogParameters(query, paramValues);
                         this.LogMessage("");
                         this.SetParameterValues(query, cmd, paramValues);

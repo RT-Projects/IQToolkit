@@ -125,12 +125,9 @@ namespace IQToolkit.Data.SqlClient
                 dataAdapter.InsertCommand.UpdatedRowSource = UpdateRowSource.None;
                 dataAdapter.UpdateBatchSize = batchSize;
 
-                this.LogMessage("-- Start SQL Batching --");
-                this.LogMessage("");
-                this.LogCommand(query, null);
+                var printed = false;
 
-                IEnumerator<object[]> en = paramSets.GetEnumerator();
-                using (en)
+                using (var en = paramSets.GetEnumerator())
                 {
                     bool hasNext = true;
                     while (hasNext)
@@ -138,6 +135,13 @@ namespace IQToolkit.Data.SqlClient
                         int count = 0;
                         for (; count < dataAdapter.UpdateBatchSize && (hasNext = en.MoveNext()); count++)
                         {
+                            if (!printed)
+                            {
+                                this.LogMessage("-- Start SQL Batching --");
+                                this.LogMessage("");
+                                this.LogCommand(query, null);
+                                printed = true;
+                            }
                             var paramValues = en.Current;
                             dataTable.Rows.Add(paramValues);
                             this.LogParameters(query, paramValues);
@@ -155,8 +159,11 @@ namespace IQToolkit.Data.SqlClient
                     }
                 }
 
-                this.LogMessage(string.Format("-- End SQL Batching --"));
-                this.LogMessage("");
+                if (printed)
+                {
+                    this.LogMessage(string.Format("-- End SQL Batching --"));
+                    this.LogMessage("");
+                }
             }
         }
     }

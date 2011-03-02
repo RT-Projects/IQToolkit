@@ -146,13 +146,12 @@ namespace IQToolkit
         }
 
         /// <summary>
-        /// Update any number of items (identified by <paramref name="updateCheck"/>) in the updatable collection with the values specified in the assignment expressions.
+        /// Update any number of items (identified by <paramref name="predicate"/>) in the updatable collection with the values specified in the <paramref name="assignments"/> expressions.
         /// </summary>
         /// <typeparam name="T">The type of the instance</typeparam>
         /// <param name="collection">The updatable collection.</param>
-        /// <param name="instance">The instance to update.</param>
-        /// <param name="updateCheck">A predicate testing the suitability of the object in the collection.</param>
-        /// <param name="assignments">A sequence of expressions that apply a field to the == operator, which will be interpreted as if it was an assignment operator.</param>
+        /// <param name="predicate">A predicate determining which of the items in the collection are to be updated.</param>
+        /// <param name="assignments">A sequence of expressions that apply the == operator to a field, which will be interpreted as if it were an assignment operator.</param>
         /// <returns>Number of rows affected.</returns>
         public static int Update<T>(this IUpdatable<T> collection, Expression<Func<T, bool>> predicate, Expression<Func<T, bool[]>> assignments)
         {
