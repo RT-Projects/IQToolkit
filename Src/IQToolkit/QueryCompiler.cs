@@ -19,12 +19,12 @@ namespace IQToolkit
         public static Delegate Compile(LambdaExpression query)
         {
             CompiledQuery cq = new CompiledQuery(query);
-            return StrongDelegate.CreateDelegate(query.Type, (Func<object[], object>)cq.Invoke);
+            return StrongDelegate.CreateDelegate(query.Type, (Func<object[], object>) cq.Invoke);
         }
 
         public static D Compile<D>(Expression<D> query)
         {
-            return (D)(object)Compile((LambdaExpression)query);
+            return (D) (object) Compile((LambdaExpression) query);
         }
 
         public static Func<TResult> Compile<TResult>(Expression<Func<TResult>> query)
@@ -55,7 +55,7 @@ namespace IQToolkit
         public static Func<IEnumerable<T>> Compile<T>(this IQueryable<T> source)
         {
             return Compile<IEnumerable<T>>(
-                Expression.Lambda<Func<IEnumerable<T>>>(((IQueryable)source).Expression)
+                Expression.Lambda<Func<IEnumerable<T>>>(((IQueryable) source).Expression)
                 );
         }
 
@@ -88,7 +88,7 @@ namespace IQToolkit
                         throw new InvalidOperationException("Could not find query provider");
                     }
 
-                    Delegate result = (Delegate)provider.Execute(this.query);
+                    Delegate result = (Delegate) provider.Execute(this.query);
                     System.Threading.Interlocked.CompareExchange(ref this.fnQuery, result, null);
                 }
             }
@@ -105,7 +105,7 @@ namespace IQToolkit
                         );
                     root = this.FindProviderInExpression(replaced);
                 }
-                if (root != null) 
+                if (root != null)
                 {
                     ConstantExpression cex = root as ConstantExpression;
                     if (cex == null)
@@ -175,10 +175,10 @@ namespace IQToolkit
                     if (fnType.FullName.StartsWith("System.Func`"))
                     {
                         var typeArgs = fnType.GetGenericArguments();
-                        MethodInfo method = this.GetType().GetMethod("FastInvoke"+typeArgs.Length, BindingFlags.Public|BindingFlags.Instance);
+                        MethodInfo method = this.GetType().GetMethod("FastInvoke" + typeArgs.Length, BindingFlags.Public | BindingFlags.Instance);
                         if (method != null)
                         {
-                            this.invoker = (Func<object[], object>)Delegate.CreateDelegate(typeof(Func<object[], object>), this, method.MakeGenericMethod(typeArgs));
+                            this.invoker = (Func<object[], object>) Delegate.CreateDelegate(typeof(Func<object[], object>), this, method.MakeGenericMethod(typeArgs));
                         }
                     }
                 }
@@ -187,57 +187,57 @@ namespace IQToolkit
 
             public object FastInvoke1<R>(object[] args)
             {
-                return ((Func<R>)this.fnQuery)();
+                return ((Func<R>) this.fnQuery)();
             }
 
             public object FastInvoke2<A1, R>(object[] args)
             {
-                return ((Func<A1, R>)this.fnQuery)((A1)args[0]);
+                return ((Func<A1, R>) this.fnQuery)((A1) args[0]);
             }
 
             public object FastInvoke3<A1, A2, R>(object[] args)
             {
-                return ((Func<A1, A2, R>)this.fnQuery)((A1)args[0], (A2)args[1]);
+                return ((Func<A1, A2, R>) this.fnQuery)((A1) args[0], (A2) args[1]);
             }
 
             public object FastInvoke4<A1, A2, A3, R>(object[] args)
             {
-                return ((Func<A1, A2, A3, R>)this.fnQuery)((A1)args[0], (A2)args[1], (A3)args[2]);
+                return ((Func<A1, A2, A3, R>) this.fnQuery)((A1) args[0], (A2) args[1], (A3) args[2]);
             }
 
             public object FastInvoke5<A1, A2, A3, A4, R>(object[] args)
             {
-                return ((Func<A1, A2, A3, A4, R>)this.fnQuery)((A1)args[0], (A2)args[1], (A3)args[2], (A4)args[3]);
+                return ((Func<A1, A2, A3, A4, R>) this.fnQuery)((A1) args[0], (A2) args[1], (A3) args[2], (A4) args[3]);
             }
 
             internal TResult Invoke<TResult>()
             {
                 this.Compile(null);
-                return ((Func<TResult>)this.fnQuery)();
+                return ((Func<TResult>) this.fnQuery)();
             }
 
             internal TResult Invoke<T1, TResult>(T1 arg)
             {
                 this.Compile(arg);
-                return ((Func<T1, TResult>)this.fnQuery)(arg);
+                return ((Func<T1, TResult>) this.fnQuery)(arg);
             }
 
             internal TResult Invoke<T1, T2, TResult>(T1 arg1, T2 arg2)
             {
                 this.Compile(arg1, arg2);
-                return ((Func<T1, T2, TResult>)this.fnQuery)(arg1, arg2);
+                return ((Func<T1, T2, TResult>) this.fnQuery)(arg1, arg2);
             }
 
             internal TResult Invoke<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3)
             {
                 this.Compile(arg1, arg2, arg3);
-                return ((Func<T1, T2, T3, TResult>)this.fnQuery)(arg1, arg2, arg3);
+                return ((Func<T1, T2, T3, TResult>) this.fnQuery)(arg1, arg2, arg3);
             }
 
             internal TResult Invoke<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
             {
                 this.Compile(arg1, arg2, arg3, arg4);
-                return ((Func<T1, T2, T3, T4, TResult>)this.fnQuery)(arg1, arg2, arg3, arg4);
+                return ((Func<T1, T2, T3, T4, TResult>) this.fnQuery)(arg1, arg2, arg3, arg4);
             }
         }
     }
@@ -256,6 +256,8 @@ namespace IQToolkit
         public static CompiledQuery<T, TResult> Create<T, TResult>(Expression<Func<T, TResult>> query) { return new CompiledQuery<T, TResult>(query); }
         public static CompiledQuery<T1, T2, TResult> Create<T1, T2, TResult>(Expression<Func<T1, T2, TResult>> query) { return new CompiledQuery<T1, T2, TResult>(query); }
         public static CompiledQuery<T1, T2, T3, TResult> Create<T1, T2, T3, TResult>(Expression<Func<T1, T2, T3, TResult>> query) { return new CompiledQuery<T1, T2, T3, TResult>(query); }
+        public static CompiledQuery<T1, T2, T3, T4, TResult> Create<T1, T2, T3, T4, TResult>(Expression<Func<T1, T2, T3, T4, TResult>> query) { return new CompiledQuery<T1, T2, T3, T4, TResult>(query); }
+        public static CompiledQuery<T1, T2, T3, T4, T5, TResult> Create<T1, T2, T3, T4, T5, TResult>(Expression<Func<T1, T2, T3, T4, T5, TResult>> query) { return new CompiledQuery<T1, T2, T3, T4, T5, TResult>(query); }
 
         /// <summary>Compiles the <see cref="_Query"/> and places the result into <see cref="_Compiled"/>, unless there already is a result in <see cref="_Compiled"/>.</summary>
         /// <param name="args">If not null, the arguments will be searched for a query provider in case the expression doesn't have one as a ConstantExpression.</param>
@@ -477,6 +479,93 @@ namespace IQToolkit
             if (_compiled == null)
                 compile(null, null);
             return _compiled(arg1, arg2, arg3);
+        }
+    }
+
+    /// <summary>Encapsulates a compiled query taking three arguments and returning a result.</summary>
+    /// <typeparam name="T1">Type of the first argument taken by the query.</typeparam>
+    /// <typeparam name="T2">Type of the second argument taken by the query.</typeparam>
+    /// <typeparam name="T3">Type of the third argument taken by the query.</typeparam>
+    /// <typeparam name="T4">Type of the fourth argument taken by the query.</typeparam>
+    /// <typeparam name="TResult">Type of the query result.</typeparam>
+    public sealed class CompiledQuery<T1, T2, T3, T4, TResult> : CompiledQuery
+    {
+        private Expression<Func<T1, T2, T3, T4, TResult>> _query;
+        private Func<T1, T2, T3, T4, TResult> _compiled;
+
+        /// <summary>Constructor.</summary>
+        /// <param name="query">The query to be compiled, as an expression.</param>
+        public CompiledQuery(Expression<Func<T1, T2, T3, T4, TResult>> query)
+        {
+            if (query == null) throw new ArgumentNullException();
+            _query = query;
+        }
+
+        private void compile(IQueryProvider provider, object[] args)
+        {
+            var compiled = CompiledQuery.Compile(_query, provider, args);
+            System.Threading.Interlocked.CompareExchange(ref _compiled, (Func<T1, T2, T3, T4, TResult>) compiled, null);
+        }
+
+        /// <summary>Compiles the query (unless it's already been compiled earlier). Returns a delegate that represents the compiled query.</summary>
+        /// <param name="provider">In cases where the query expression itself doesn't reference a queryable *instance*, a query provider must be supplied during compilation.</param>
+        public Func<T1, T2, T3, T4, TResult> Compile(IQueryProvider provider = null)
+        {
+            if (_compiled == null)
+                compile(provider, null);
+            return _compiled;
+        }
+
+        /// <summary>Executes the compiled query. The query will be compiled at this point if this hasn't been done yet.</summary>
+        public TResult Invoke(T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+        {
+            if (_compiled == null)
+                compile(null, null);
+            return _compiled(arg1, arg2, arg3, arg4);
+        }
+    }
+
+    /// <summary>Encapsulates a compiled query taking three arguments and returning a result.</summary>
+    /// <typeparam name="T1">Type of the first argument taken by the query.</typeparam>
+    /// <typeparam name="T2">Type of the second argument taken by the query.</typeparam>
+    /// <typeparam name="T3">Type of the third argument taken by the query.</typeparam>
+    /// <typeparam name="T4">Type of the fourth argument taken by the query.</typeparam>
+    /// <typeparam name="T5">Type of the fifth argument taken by the query.</typeparam>
+    /// <typeparam name="TResult">Type of the query result.</typeparam>
+    public sealed class CompiledQuery<T1, T2, T3, T4, T5, TResult> : CompiledQuery
+    {
+        private Expression<Func<T1, T2, T3, T4, T5, TResult>> _query;
+        private Func<T1, T2, T3, T4, T5, TResult> _compiled;
+
+        /// <summary>Constructor.</summary>
+        /// <param name="query">The query to be compiled, as an expression.</param>
+        public CompiledQuery(Expression<Func<T1, T2, T3, T4, T5, TResult>> query)
+        {
+            if (query == null) throw new ArgumentNullException();
+            _query = query;
+        }
+
+        private void compile(IQueryProvider provider, object[] args)
+        {
+            var compiled = CompiledQuery.Compile(_query, provider, args);
+            System.Threading.Interlocked.CompareExchange(ref _compiled, (Func<T1, T2, T3, T4, T5, TResult>) compiled, null);
+        }
+
+        /// <summary>Compiles the query (unless it's already been compiled earlier). Returns a delegate that represents the compiled query.</summary>
+        /// <param name="provider">In cases where the query expression itself doesn't reference a queryable *instance*, a query provider must be supplied during compilation.</param>
+        public Func<T1, T2, T3, T4, T5, TResult> Compile(IQueryProvider provider = null)
+        {
+            if (_compiled == null)
+                compile(provider, null);
+            return _compiled;
+        }
+
+        /// <summary>Executes the compiled query. The query will be compiled at this point if this hasn't been done yet.</summary>
+        public TResult Invoke(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
+        {
+            if (_compiled == null)
+                compile(null, null);
+            return _compiled(arg1, arg2, arg3, arg4, arg5);
         }
     }
 }
