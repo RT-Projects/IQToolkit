@@ -70,6 +70,8 @@ namespace IQToolkit.Data.SQLite
                     cmd.CommandText = query.CommandText;
                     this.SetParameterValues(query, cmd, paramValues);
                     cmd.Prepare();
+                    if (this.provider.commandCache.Count > 1000)
+                        this.provider.commandCache.Clear();
                     this.provider.commandCache.Add(query, cmd);
                     if (this.provider.Transaction != null)
                     {
