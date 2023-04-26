@@ -83,6 +83,7 @@ namespace IQToolkit.Data
             return n;
         }
 
+#if false
         public static DbEntityProvider FromApplicationSettings()
         {
 #pragma warning disable 618
@@ -92,6 +93,7 @@ namespace IQToolkit.Data
             return From(provider, connection, mapping);
 #pragma warning restore 618
         }
+#endif
 
         public static DbEntityProvider From(string connectionString, string mappingId)
         {
