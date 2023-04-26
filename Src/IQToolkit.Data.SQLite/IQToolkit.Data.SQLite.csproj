@@ -16,4 +16,8 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\Lib\Sqlite\sqlite3.dll" Link="\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
